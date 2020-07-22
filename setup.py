@@ -72,12 +72,12 @@ def rename_files_and_directories(root, extensions,
 
 
 if __name__ == '__main__':
-    service_name = raw_input('Enter the name of your service: ')
+    service_name = input('Enter the name of your service: ')
     if(not re.match('[a-zA-Z_][a-zA-Z\d_]*', service_name)):
         print("Error: service name must start with a letter and consist of letters, digits, or underscores")
         sys.exit(-1)
     service_name = service_name.rstrip()
-    resource_name = raw_input('Enter the name of the resources (e.g., database): ')
+    resource_name = input('Enter the name of the resources (e.g., database): ')
     if(not re.match('[a-zA-Z_][a-zA-Z\d_]*', resource_name)):
         print("Error: resource name must start with a letter and consist of letters, digits, or underscores")
         sys.exit(-1)
@@ -90,12 +90,10 @@ if __name__ == '__main__':
     }
     files_to_edit = list_files_to_edit('.',
         extensions=['.cpp', '.h', '.hpp', '.txt', '.in'],
-        exclude_directories=['.git','build', '.spack-env', 'munit'],
-        exclude_files=['uthash.h'])
+        exclude_directories=['.git','build', '.spack-env'])
     for f in files_to_edit:
         replace_in_file(f, mapping)
     rename_files_and_directories('.',
         extensions=['.cpp', '.hpp', '.h', '.txt', '.in'],
         mapping=mapping,
-        exclude_directories=['.git','build', '.spack-env', 'munit'],
-        exclude_files=['uthash.h'])
+        exclude_directories=['.git','build', '.spack-env'])
