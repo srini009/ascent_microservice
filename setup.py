@@ -86,7 +86,8 @@ if __name__ == '__main__':
         'ALPHA' : service_name.upper(),
         'Alpha' : service_name.capitalize(),
         'resource' : resource_name,
-        'RESOURCE' : resource_name.upper()
+        'RESOURCE' : resource_name.upper(),
+        'Resource' : resource_name.capitalize()
     }
     files_to_edit = list_files_to_edit('.',
         extensions=['.cpp', '.h', '.hpp', '.txt', '.in'],
