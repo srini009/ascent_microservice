@@ -9,4 +9,5 @@ spack:
   - spdlog
   - cppunit
   - tclap
+  - mochi-bedrock
   concretization: together

@@ -28,10 +28,12 @@ class Provider {
      *
      * @param engine Thallium engine to use to receive RPCs.
      * @param provider_id Provider id.
+     * @param config JSON-formatted configuration.
      * @param pool Argobots pool to use to handle RPCs.
      */
     Provider(const tl::engine& engine,
              uint16_t provider_id = 0,
+             const std::string& config = "",
              const tl::pool& pool = tl::pool());
 
     /**
@@ -39,10 +41,12 @@ class Provider {
      *
      * @param mid Margo instance id to use to receive RPCs.
      * @param provider_id Provider id.
+     * @param config JSON-formatted configuration.
      * @param pool Argobots pool to use to handle RPCs.
      */
     Provider(margo_instance_id mid,
              uint16_t provider_id = 0,
+             const std::string& config = "",
              const tl::pool& pool = tl::pool());
 
     /**
@@ -77,6 +81,13 @@ class Provider {
      * @param token Security token to set.
      */
     void setSecurityToken(const std::string& token);
+
+    /**
+     * @brief Return a JSON-formatted configuration of the provider.
+     *
+     * @return JSON formatted string.
+     */
+    std::string getConfig() const;
 
     /**
      * @brief Checks whether the Provider instance is valid.

@@ -1,6 +1,6 @@
 /*
  * (C) 2020 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #ifndef __ALPHA_CLIENT_HPP
@@ -44,7 +44,7 @@ class Client {
      * @param engine Thallium engine.
      */
     Client(const thallium::engine& engine);
-    
+
     /**
      * @brief Copy constructor.
      */
@@ -87,7 +87,7 @@ class Client {
      *
      * @return a ResourceHandle instance.
      */
-    ResourceHandle makeResourceHandle(const std::string& address, 
+    ResourceHandle makeResourceHandle(const std::string& address,
                                       uint16_t provider_id,
                                       const UUID& resource_id,
                                       bool check = true) const;

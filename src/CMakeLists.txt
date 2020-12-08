@@ -14,6 +14,9 @@ set (admin-src-files
 set (dummy-src-files
      dummy/DummyBackend.cpp)
 
+set (module-src-files
+     BedrockModule.cpp)
+
 # load package helper for generating cmake CONFIG packages
 include (CMakePackageConfigHelpers)
 
@@ -63,6 +66,20 @@ set_target_properties (alpha-admin
     PROPERTIES VERSION ${ALPHA_VERSION}
     SOVERSION ${ALPHA_VERSION_MAJOR})
 
+if (${ENABLE_BEDROCK})
+# bedrock module library
+add_library (alpha-bedrock-module ${module-src-files})
+target_link_libraries (alpha-bedrock-module alpha-server alpha-admin alpha-client)
+target_include_directories (alpha-bedrock-module PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories (alpha-bedrock-module BEFORE PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+target_include_directories (alpha-bedrock-module BEFORE PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+set_target_properties (alpha-bedrock-module
+    PROPERTIES VERSION ${ALPHA_VERSION}
+    SOVERSION ${ALPHA_VERSION_MAJOR})
+endif ()
+
 # installation stuff (packaging and install commands)
 write_basic_package_version_file(
     "alpha-config-version.cmake"
@@ -90,10 +107,15 @@ configure_file ("alpha-admin.pc.in"  "alpha-admin.pc"  @ONLY)
 configure_file ("config.h.in" "config.h" @ONLY) 
 
 # "make install" rules
-install (TARGETS alpha-admin # alpha-server alpha-client
+install (TARGETS alpha-admin alpha-server alpha-client
          EXPORT alpha-targets
          ARCHIVE DESTINATION lib
          LIBRARY DESTINATION lib)
+if (${ENABLE_BEDROCK})
+    install (TARGETS alpha-bedrock-module
+             ARCHIVE DESTINATION lib
+             LIBRARY DESTINATION lib)
+endif ()
 install (EXPORT alpha-targets
          DESTINATION ${alpha-pkg}
          FILE "alpha-targets.cmake")
