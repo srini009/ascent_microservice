@@ -1,7 +1,7 @@
 include_directories(../include)
 
 add_library(alpha-test Main.cpp)
-target_link_libraries(alpha-test cppunit alpha-server alpha-admin alpha-client)
+target_link_libraries(alpha-test PkgConfig::cppunit alpha-server alpha-admin alpha-client)
 
 add_executable(AdminTest AdminTest.cpp)
 target_link_libraries(AdminTest alpha-test)

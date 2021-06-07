@@ -1,6 +1,6 @@
 /*
  * (C) 2020 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #include "alpha/Exception.hpp"
@@ -66,6 +66,10 @@ ResourceHandle Client::makeResourceHandle(
         throw Exception(result.error());
         return ResourceHandle(nullptr);
     }
+}
+
+std::string Client::getConfig() const {
+    return "{}";
 }
 
 }

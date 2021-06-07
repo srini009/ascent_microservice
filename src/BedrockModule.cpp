@@ -32,12 +32,17 @@ class AlphaFactory : public bedrock::AbstractServiceFactory {
         return provider->getConfig();
     }
 
-    void *initClient(margo_instance_id mid) override {
-        return static_cast<void *>(new alpha::Client(mid));
+    void *initClient(const bedrock::FactoryArgs& args) override {
+        return static_cast<void *>(new alpha::Client(args.mid));
     }
 
     void finalizeClient(void *client) override {
         delete static_cast<alpha::Client *>(client);
+    }
+
+    std::string getClientConfig(void* c) override {
+        auto client = static_cast<alpha::Client*>(c);
+        return client->getConfig();
     }
 
     void *createProviderHandle(void *c, hg_addr_t address,
@@ -56,7 +61,12 @@ class AlphaFactory : public bedrock::AbstractServiceFactory {
         delete ph;
     }
 
-    const std::vector<bedrock::Dependency> &getDependencies() override {
+    const std::vector<bedrock::Dependency> &getProviderDependencies() override {
+        static const std::vector<bedrock::Dependency> no_dependency;
+        return no_dependency;
+    }
+
+    const std::vector<bedrock::Dependency> &getClientDependencies() override {
         static const std::vector<bedrock::Dependency> no_dependency;
         return no_dependency;
     }

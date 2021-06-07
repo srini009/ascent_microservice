@@ -97,6 +97,13 @@ class Client {
      */
     operator bool() const;
 
+    /**
+     * @brief Get internal configuration as a JSON-formatted string.
+     *
+     * @return configuration string.
+     */
+    std::string getConfig() const;
+
     private:
 
     Client(const std::shared_ptr<ClientImpl>& impl);
