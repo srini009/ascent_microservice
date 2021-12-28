@@ -3,26 +3,26 @@
  * 
  * See COPYRIGHT in top-level directory.
  */
-#ifndef __ALPHA_ADMIN_HPP
-#define __ALPHA_ADMIN_HPP
+#ifndef __AMS_ADMIN_HPP
+#define __AMS_ADMIN_HPP
 
 #include <nlohmann/json.hpp>
 #include <thallium.hpp>
 #include <string>
 #include <memory>
-#include <alpha/Exception.hpp>
-#include <alpha/UUID.hpp>
+#include <ams/Exception.hpp>
+#include <ams/UUID.hpp>
 
-namespace alpha {
+namespace ams {
 
 namespace tl = thallium;
 
 class AdminImpl;
 
 /**
- * @brief Admin interface to a ALPHA service. Enables creating
- * and destroying resources, and attaching and detaching them
- * from a provider. If ALPHA providers have set up a security
+ * @brief Admin interface to a AMS service. Enables creating
+ * and destroying nodes, and attaching and detaching them
+ * from a provider. If AMS providers have set up a security
  * token, operations from the Admin interface will need this
  * security token.
  */
@@ -82,68 +82,68 @@ class Admin {
     operator bool() const;
     
     /**
-     * @brief Creates a resource on the target provider.
+     * @brief Creates a node on the target provider.
      * The config string must be a JSON object acceptable
      * by the desired backend's creation function.
      *
      * @param address Address of the target provider.
      * @param provider_id Provider id.
-     * @param type Type of the resource to create.
-     * @param config JSON configuration for the resource.
+     * @param type Type of the node to create.
+     * @param config JSON configuration for the node.
      */
-    UUID createResource(const std::string& address,
+    UUID createNode(const std::string& address,
                         uint16_t provider_id,
                         const std::string& type,
                         const std::string& config,
                         const std::string& token="") const;
     
     /**
-     * @brief Creates a resource on the target provider.
+     * @brief Creates a node on the target provider.
      * The config string must be a JSON object acceptable
      * by the desired backend's creation function.
      *
      * @param address Address of the target provider.
      * @param provider_id Provider id.
-     * @param type Type of the resource to create.
-     * @param config JSON configuration for the resource.
+     * @param type Type of the node to create.
+     * @param config JSON configuration for the node.
      */
-    UUID createResource(const std::string& address,
+    UUID createNode(const std::string& address,
                         uint16_t provider_id,
                         const std::string& type,
                         const char* config,
                         const std::string& token="") const {
-        return createResource(address, provider_id, type, std::string(config), token);
+        return createNode(address, provider_id, type, std::string(config), token);
     }
 
     /**
-     * @brief Creates a resource on the target provider.
+     * @brief Creates a node on the target provider.
      * The config object must be a JSON object acceptable
      * by the desired backend's creation function.
      *
      * @param address Address of the target provider.
      * @param provider_id Provider id.
-     * @param type Type of the resource to create.
-     * @param config JSON configuration for the resource.
+     * @param type Type of the node to create.
+     * @param config JSON configuration for the node.
      */
-    UUID createResource(const std::string& address,
+    UUID createNode(const std::string& address,
                         uint16_t provider_id,
                         const std::string& type,
                         const json& config,
                         const std::string& token="") const {
-        return createResource(address, provider_id, type, config.dump(), token);
+        return createNode(address, provider_id, type, config.dump(), token);
     }
 
     /**
-     * @brief Opens an existing resource in the target provider.
+     * @brief Opens an existing node in the target provider.
      * The config string must be a JSON object acceptable
      * by the desired backend's open function.
      *
      * @param address Address of the target provider.
      * @param provider_id Provider id.
-     * @param type Type of the resource to create.
-     * @param config JSON configuration for the resource.
+     * @param type Type of the node to create.
+     * @param config JSON configuration for the node.
      */
-    UUID openResource(const std::string& address,
+    UUID openNode(const std::string& address,
                       uint16_t provider_id,
                       const std::string& type,
                       const std::string& config,
@@ -156,39 +156,39 @@ class Admin {
      *
      * @param address Address of the target provider.
      * @param provider_id Provider id.
-     * @param type Type of the resource to create.
+     * @param type Type of the node to create.
      * @param config JSON configuration for the database.
      */
-    UUID openResource(const std::string& address,
+    UUID openNode(const std::string& address,
                       uint16_t provider_id,
                       const std::string& type,
                       const json& config,
                       const std::string& token="") const {
-        return openResource(address, provider_id, type, config.dump(), token);
+        return openNode(address, provider_id, type, config.dump(), token);
     }
 
     /**
-     * @brief Closes an open resource in the target provider.
+     * @brief Closes an open node in the target provider.
      *
      * @param address Address of the target provider.
      * @param provider_id Provider id.
-     * @param resource_id UUID of the resource to close.
+     * @param node_id UUID of the node to close.
      */
-    void closeResource(const std::string& address,
+    void closeNode(const std::string& address,
                         uint16_t provider_id,
-                        const UUID& resource_id,
+                        const UUID& node_id,
                         const std::string& token="") const;
 
     /**
-     * @brief Destroys an open resource in the target provider.
+     * @brief Destroys an open node in the target provider.
      *
      * @param address Address of the target provider.
      * @param provider_id Provider id.
-     * @param resource_id UUID of the resource to destroy.
+     * @param node_id UUID of the node to destroy.
      */
-    void destroyResource(const std::string& address,
+    void destroyNode(const std::string& address,
                          uint16_t provider_id,
-                         const UUID& resource_id,
+                         const UUID& node_id,
                          const std::string& token="") const;
 
     /**

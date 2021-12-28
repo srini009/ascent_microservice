@@ -3,26 +3,26 @@
  *
  * See COPYRIGHT in top-level directory.
  */
-#ifndef __ALPHA_CLIENT_HPP
-#define __ALPHA_CLIENT_HPP
+#ifndef __AMS_CLIENT_HPP
+#define __AMS_CLIENT_HPP
 
-#include <alpha/ResourceHandle.hpp>
-#include <alpha/UUID.hpp>
+#include <ams/NodeHandle.hpp>
+#include <ams/UUID.hpp>
 #include <thallium.hpp>
 #include <memory>
 
-namespace alpha {
+namespace ams {
 
 class ClientImpl;
-class ResourceHandle;
+class NodeHandle;
 
 /**
  * @brief The Client object is the main object used to establish
- * a connection with a Alpha service.
+ * a connection with a Ams service.
  */
 class Client {
 
-    friend class ResourceHandle;
+    friend class NodeHandle;
 
     public:
 
@@ -76,20 +76,20 @@ class Client {
     const thallium::engine& engine() const;
 
     /**
-     * @brief Creates a handle to a remote resource and returns.
+     * @brief Creates a handle to a remote node and returns.
      * You may set "check" to false if you know for sure that the
-     * corresponding resource exists, which will avoid one RPC.
+     * corresponding node exists, which will avoid one RPC.
      *
      * @param address Address of the provider holding the database.
      * @param provider_id Provider id.
-     * @param resource_id Resource UUID.
+     * @param node_id Node UUID.
      * @param check Checks if the Database exists by issuing an RPC.
      *
-     * @return a ResourceHandle instance.
+     * @return a NodeHandle instance.
      */
-    ResourceHandle makeResourceHandle(const std::string& address,
+    NodeHandle makeNodeHandle(const std::string& address,
                                       uint16_t provider_id,
-                                      const UUID& resource_id,
+                                      const UUID& node_id,
                                       bool check = true) const;
 
     /**

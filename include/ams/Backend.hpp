@@ -3,10 +3,10 @@
  * 
  * See COPYRIGHT in top-level directory.
  */
-#ifndef __ALPHA_BACKEND_HPP
-#define __ALPHA_BACKEND_HPP
+#ifndef __AMS_BACKEND_HPP
+#define __AMS_BACKEND_HPP
 
-#include <alpha/RequestResult.hpp>
+#include <ams/RequestResult.hpp>
 #include <unordered_set>
 #include <unordered_map>
 #include <functional>
@@ -17,18 +17,18 @@
  * @brief Helper class to register backend types into the backend factory.
  */
 template<typename BackendType>
-class __AlphaBackendRegistration;
+class __AmsBackendRegistration;
 
-namespace alpha {
+namespace ams {
 
 /**
- * @brief Interface for resource backends. To build a new backend,
+ * @brief Interface for node backends. To build a new backend,
  * implement a class MyBackend that inherits from Backend, and put
- * ALPHA_REGISTER_BACKEND(mybackend, MyBackend); in a cpp file
+ * AMS_REGISTER_BACKEND(mybackend, MyBackend); in a cpp file
  * that includes your backend class' header file.
  *
  * Your backend class should also have two static functions to
- * respectively create and open a resource:
+ * respectively create and open a node:
  *
  * std::unique_ptr<Backend> create(const json& config)
  * std::unique_ptr<Backend> attach(const json& config)
@@ -73,6 +73,26 @@ class Backend {
     virtual void sayHello() = 0;
 
     /**
+     * @brief Opens Ascent.
+     */
+    virtual ams::RequestResult<bool> ams_open(std::string opts) = 0;
+
+    /**
+     * @brief Closes Ascent.
+     */
+    virtual ams::RequestResult<bool> ams_close() = 0;
+
+    /**
+     * @brief Publishes a mesh to Ascent.
+     */
+    virtual ams::RequestResult<bool> ams_publish(std::string bp_mesh) = 0;
+
+    /**
+     * @brief Executes a set of actions in Ascent.
+     */
+    virtual ams::RequestResult<bool> ams_execute(std::string actions) = 0;
+
+    /**
      * @brief Compute the sum of two integers.
      *
      * @param x first integer
@@ -83,7 +103,7 @@ class Backend {
     virtual RequestResult<int32_t> computeSum(int32_t x, int32_t y) = 0;
 
     /**
-     * @brief Destroys the underlying resource.
+     * @brief Destroys the underlying node.
      *
      * @return a RequestResult<bool> instance indicating
      * whether the database was successfully destroyed.
@@ -93,30 +113,30 @@ class Backend {
 };
 
 /**
- * @brief The ResourceFactory contains functions to create
- * or open resources.
+ * @brief The NodeFactory contains functions to create
+ * or open nodes.
  */
-class ResourceFactory {
+class NodeFactory {
 
     template<typename BackendType>
-    friend class ::__AlphaBackendRegistration;
+    friend class ::__AmsBackendRegistration;
 
     using json = nlohmann::json;
 
     public:
 
-    ResourceFactory() = delete;
+    NodeFactory() = delete;
 
     /**
-     * @brief Creates a resource and returns a unique_ptr to the created instance.
+     * @brief Creates a node and returns a unique_ptr to the created instance.
      *
      * @param backend_name Name of the backend to use.
      * @param engine Thallium engine.
      * @param config Configuration object to pass to the backend's create function.
      *
-     * @return a unique_ptr to the created Resource.
+     * @return a unique_ptr to the created Node.
      */
-    static std::unique_ptr<Backend> createResource(const std::string& backend_name,
+    static std::unique_ptr<Backend> createNode(const std::string& backend_name,
                                                    const thallium::engine& engine,
                                                    const json& config);
 
@@ -130,7 +150,7 @@ class ResourceFactory {
      *
      * @return a unique_ptr to the created Backend.
      */
-    static std::unique_ptr<Backend> openResource(const std::string& backend_name,
+    static std::unique_ptr<Backend> openNode(const std::string& backend_name,
                                                 const thallium::engine& engine,
                                                 const json& config);
 
@@ -143,25 +163,25 @@ class ResourceFactory {
                 std::function<std::unique_ptr<Backend>(const thallium::engine&, const json&)>> open_fn;
 };
 
-} // namespace alpha
+} // namespace ams
 
 
-#define ALPHA_REGISTER_BACKEND(__backend_name, __backend_type) \
-    static __AlphaBackendRegistration<__backend_type> __alpha ## __backend_name ## _backend( #__backend_name )
+#define AMS_REGISTER_BACKEND(__backend_name, __backend_type) \
+    static __AmsBackendRegistration<__backend_type> __ams ## __backend_name ## _backend( #__backend_name )
 
 template<typename BackendType>
-class __AlphaBackendRegistration {
+class __AmsBackendRegistration {
 
     using json = nlohmann::json;
 
     public:
 
-    __AlphaBackendRegistration(const std::string& backend_name)
+    __AmsBackendRegistration(const std::string& backend_name)
     {
-        alpha::ResourceFactory::create_fn[backend_name] = [](const thallium::engine& engine, const json& config) {
+        ams::NodeFactory::create_fn[backend_name] = [](const thallium::engine& engine, const json& config) {
             return BackendType::create(engine, config);
         };
-        alpha::ResourceFactory::open_fn[backend_name] = [](const thallium::engine& engine, const json& config) {
+        ams::NodeFactory::open_fn[backend_name] = [](const thallium::engine& engine, const json& config) {
             return BackendType::open(engine, config);
         };
     }

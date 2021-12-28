@@ -3,48 +3,48 @@
  * 
  * See COPYRIGHT in top-level directory.
  */
-#include <alpha/Admin.hpp>
+#include <ams/Admin.hpp>
 #include <cppunit/extensions/HelperMacros.h>
 
 extern thallium::engine engine;
-extern std::string resource_type;
+extern std::string node_type;
 
 class AdminTest : public CppUnit::TestFixture
 {
     CPPUNIT_TEST_SUITE( AdminTest );
-    CPPUNIT_TEST( testAdminCreateResource );
+    CPPUNIT_TEST( testAdminCreateNode );
     CPPUNIT_TEST_SUITE_END();
 
-    static constexpr const char* resource_config = "{ \"path\" : \"mydb\" }";
+    static constexpr const char* node_config = "{ \"path\" : \"mydb\" }";
 
     public:
 
     void setUp() {}
     void tearDown() {}
 
-    void testAdminCreateResource() {
-        alpha::Admin admin(engine);
+    void testAdminCreateNode() {
+        ams::Admin admin(engine);
         std::string addr = engine.self();
 
-        alpha::UUID resource_id;
-        // Create a valid Resource
-        CPPUNIT_ASSERT_NO_THROW_MESSAGE("admin.createResource should return a valid Resource",
-                resource_id = admin.createResource(addr, 0, resource_type, resource_config));
+        ams::UUID node_id;
+        // Create a valid Node
+        CPPUNIT_ASSERT_NO_THROW_MESSAGE("admin.createNode should return a valid Node",
+                node_id = admin.createNode(addr, 0, node_type, node_config));
 
-        // Create a Resource with a wrong backend type
-        alpha::UUID bad_id;
-        CPPUNIT_ASSERT_THROW_MESSAGE("admin.createResource should throw an exception (wrong backend)",
-                bad_id = admin.createResource(addr, 0, "blabla", resource_config),
-                alpha::Exception);
+        // Create a Node with a wrong backend type
+        ams::UUID bad_id;
+        CPPUNIT_ASSERT_THROW_MESSAGE("admin.createNode should throw an exception (wrong backend)",
+                bad_id = admin.createNode(addr, 0, "blabla", node_config),
+                ams::Exception);
 
-        // Destroy the Resource
-        CPPUNIT_ASSERT_NO_THROW_MESSAGE("admin.destroyResource should not throw on valid Resource",
-            admin.destroyResource(addr, 0, resource_id));
+        // Destroy the Node
+        CPPUNIT_ASSERT_NO_THROW_MESSAGE("admin.destroyNode should not throw on valid Node",
+            admin.destroyNode(addr, 0, node_id));
 
-        // Destroy an invalid Resource
-        CPPUNIT_ASSERT_THROW_MESSAGE("admin.destroyResource should throw on invalid Resource",
-            admin.destroyResource(addr, 0, bad_id),
-            alpha::Exception);
+        // Destroy an invalid Node
+        CPPUNIT_ASSERT_THROW_MESSAGE("admin.destroyNode should throw on invalid Node",
+            admin.destroyNode(addr, 0, bad_id),
+            ams::Exception);
     }
 };
 CPPUNIT_TEST_SUITE_REGISTRATION( AdminTest );

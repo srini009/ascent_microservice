@@ -1,17 +1,17 @@
 include_directories(../include)
 
-add_library(alpha-test Main.cpp)
-target_link_libraries(alpha-test PkgConfig::cppunit alpha-server alpha-admin alpha-client)
+add_library(ams-test Main.cpp)
+target_link_libraries(ams-test PkgConfig::cppunit ams-server ams-admin ams-client)
 
 add_executable(AdminTest AdminTest.cpp)
-target_link_libraries(AdminTest alpha-test)
+target_link_libraries(AdminTest ams-test)
 
 add_executable(ClientTest AdminTest.cpp)
-target_link_libraries(ClientTest alpha-test)
+target_link_libraries(ClientTest ams-test)
 
-add_executable(ResourceTest ResourceTest.cpp)
-target_link_libraries(ResourceTest alpha-test)
+add_executable(NodeTest NodeTest.cpp)
+target_link_libraries(NodeTest ams-test)
 
 add_test(NAME AdminTest COMMAND ./AdminTest AdminTest.xml)
 add_test(NAME ClientTest COMMAND ./ClientTest ClientTest.xml)
-add_test(NAME ResourceTest COMMAND ./ResourceTest ResourceTest.xml)
+add_test(NAME NodeTest COMMAND ./NodeTest NodeTest.xml)

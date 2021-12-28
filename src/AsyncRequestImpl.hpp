@@ -3,13 +3,13 @@
  * 
  * See COPYRIGHT in top-level directory.
  */
-#ifndef __ALPHA_ASYNC_REQUEST_IMPL_H
-#define __ALPHA_ASYNC_REQUEST_IMPL_H
+#ifndef __AMS_ASYNC_REQUEST_IMPL_H
+#define __AMS_ASYNC_REQUEST_IMPL_H
 
 #include <functional>
 #include <thallium.hpp>
 
-namespace alpha {
+namespace ams {
 
 namespace tl = thallium;
 

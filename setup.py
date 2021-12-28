@@ -82,12 +82,12 @@ if __name__ == '__main__':
         print("Error: resource name must start with a letter and consist of letters, digits, or underscores")
         sys.exit(-1)
     mapping = {
-        'alpha' : service_name,
-        'ALPHA' : service_name.upper(),
-        'Alpha' : service_name.capitalize(),
-        'resource' : resource_name,
-        'RESOURCE' : resource_name.upper(),
-        'Resource' : resource_name.capitalize()
+        'ascent' : service_name,
+        'ASCENT' : service_name.upper(),
+        'Ascent' : service_name.capitalize(),
+        'node' : resource_name,
+        'NODE' : resource_name.upper(),
+        'Node' : resource_name.capitalize()
     }
     files_to_edit = list_files_to_edit('.',
         extensions=['.cpp', '.h', '.hpp', '.txt', '.in'],

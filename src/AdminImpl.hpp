@@ -3,12 +3,12 @@
  * 
  * See COPYRIGHT in top-level directory.
  */
-#ifndef __ALPHA_ADMIN_IMPL_H
-#define __ALPHA_ADMIN_IMPL_H
+#ifndef __AMS_ADMIN_IMPL_H
+#define __AMS_ADMIN_IMPL_H
 
 #include <thallium.hpp>
 
-namespace alpha {
+namespace ams {
 
 namespace tl = thallium;
 
@@ -17,17 +17,17 @@ class AdminImpl {
     public:
 
     tl::engine           m_engine;
-    tl::remote_procedure m_create_resource;
-    tl::remote_procedure m_open_resource;
-    tl::remote_procedure m_close_resource;
-    tl::remote_procedure m_destroy_resource;
+    tl::remote_procedure m_create_node;
+    tl::remote_procedure m_open_node;
+    tl::remote_procedure m_close_node;
+    tl::remote_procedure m_destroy_node;
 
     AdminImpl(const tl::engine& engine)
     : m_engine(engine)
-    , m_create_resource(m_engine.define("alpha_create_resource"))
-    , m_open_resource(m_engine.define("alpha_open_resource"))
-    , m_close_resource(m_engine.define("alpha_close_resource"))
-    , m_destroy_resource(m_engine.define("alpha_destroy_resource"))
+    , m_create_node(m_engine.define("ams_create_node"))
+    , m_open_node(m_engine.define("ams_open_node"))
+    , m_close_node(m_engine.define("ams_close_node"))
+    , m_destroy_node(m_engine.define("ams_destroy_node"))
     {}
 
     AdminImpl(margo_instance_id mid)
