@@ -30,6 +30,7 @@ ams::RequestResult<bool> DummyNode::ams_open(std::string opts) {
 }
 
 ams::RequestResult<bool> DummyNode::ams_close() {
+    std::cout << "Ascent Close!" << std::endl;
     ascent_lib.close();
     ams::RequestResult<bool> result;
     result.value() = true;
@@ -49,8 +50,6 @@ ams::RequestResult<bool> DummyNode::ams_publish(std::string bp_mesh) {
 ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
     conduit::Node n;
     std::cout << "Ascent Execute!" << std::endl;
-    conduit::Node info;
-    ascent_lib.info(info);
     n.parse(actions,"yaml");
     ascent_lib.execute(n);
     ams::RequestResult<bool> result;

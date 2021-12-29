@@ -72,13 +72,12 @@ int main(int argc, char** argv) {
 	//a.open(n);
 	Node mesh;
     	conduit::blueprint::mesh::examples::braid("hexs",
-        	                                      2,
-                	                              2,
-                        	                      2,
+        	                                      5,
+                	                              5,
+                        	                      5,
                                 	              mesh);
 
 	//a.publish(mesh);
-	node.ams_publish(mesh);
 
 	Node actions;
     	Node &add_act = actions.append();
@@ -89,13 +88,14 @@ int main(int argc, char** argv) {
 	Node &extracts = add_act["extracts"];
 	extracts["e1/type"] = "relay";
 	extracts["e1/params/path"] = "out_export_braid_all_fields";
-	extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
+	extracts["e1/params/protocol"] = "blueprint/mesh/yaml";
 
 	//a.execute(actions);
+	node.ams_publish(mesh);
 	node.ams_execute(actions);
 
 	//a.close();
-	node.ams_close();
+	//node.ams_close();
 
     } catch(const ams::Exception& ex) {
         std::cerr << ex.what() << std::endl;

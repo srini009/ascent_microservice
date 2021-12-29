@@ -54,7 +54,7 @@ void NodeHandle::ams_open(conduit::Node opts) const {
     auto& rpc = self->m_client->m_ams_open;
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
-    RequestResult<bool> result = rpc.on(ph)(node_id, opts.to_yaml());
+    RequestResult<bool> result = rpc.on(ph)(node_id, opts.to_string());
     if(not result.success()) {
         throw Exception(result.error());
     }
@@ -65,7 +65,7 @@ void NodeHandle::ams_publish(conduit::Node bp_mesh) const {
     auto& rpc = self->m_client->m_ams_publish;
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
-    RequestResult<bool> result = rpc.on(ph)(node_id, bp_mesh.to_yaml());
+    RequestResult<bool> result = rpc.on(ph)(node_id, bp_mesh.to_string());
     if(not result.success()) {
         throw Exception(result.error());
     }
@@ -76,7 +76,7 @@ void NodeHandle::ams_execute(conduit::Node actions) const {
     auto& rpc = self->m_client->m_ams_execute;
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
-    RequestResult<bool> result = rpc.on(ph)(node_id, actions.to_yaml());
+    RequestResult<bool> result = rpc.on(ph)(node_id, actions.to_string());
     if(not result.success()) {
         throw Exception(result.error());
     }
