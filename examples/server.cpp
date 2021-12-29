@@ -5,12 +5,15 @@
  */
 #include <ams/Provider.hpp>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <spdlog/spdlog.h>
 #include <tclap/CmdLine.h>
+#include <mpi.h>
 
 namespace tl = thallium;
 namespace snt = ams;
+using namespace std;
 
 static std::string g_address = "na+sm";
 static unsigned    g_num_providers = 1;
@@ -21,6 +24,8 @@ static bool        g_use_progress_thread = false;
 static void parse_command_line(int argc, char** argv);
 
 int main(int argc, char** argv) {
+    MPI_Init(&argc, &argv);
+    ofstream addr_file;
     parse_command_line(argc, argv);
     spdlog::set_level(spdlog::level::from_str(g_log_level));
     tl::engine engine(g_address, THALLIUM_SERVER_MODE, g_use_progress_thread, g_num_threads);
@@ -29,8 +34,29 @@ int main(int argc, char** argv) {
     for(unsigned i=0 ; i < g_num_providers; i++) {
         providers.emplace_back(engine, i);
     }
+    MPI_Barrier(MPI_COMM_WORLD);
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if(rank == 0) {
+	    addr_file.open("addr.mercury", ios::app);
+	    addr_file << size << "\n";
+	    addr_file.close();
+    }
+
+    for(int i = 0; i < size; i++) {
+	    if(rank == i) {
+		    addr_file.open("addr.mercury", ios::app);
+		    addr_file << rank << " " << (std::string)engine.self() << "\n";
+		    addr_file.close();
+	    }
+	    MPI_Barrier(MPI_COMM_WORLD);
+    }
+
     spdlog::info("Server running at address {}", (std::string)engine.self());
     engine.wait_for_finalize();
+    MPI_Finalize();
     return 0;
 }
 

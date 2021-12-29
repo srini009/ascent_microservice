@@ -7,13 +7,17 @@
 #include <spdlog/spdlog.h>
 #include <tclap/CmdLine.h>
 #include <iostream>
+#include <assert.h>
+#include <sstream>
 #include <ascent.hpp>
 #include <conduit.hpp>
 #include <conduit_blueprint.hpp>
+#include <mpi.h>
 
 namespace tl = thallium;
 using namespace conduit;
 
+static std::string g_address_file;
 static std::string g_address;
 static std::string g_protocol;
 static std::string g_node;
@@ -22,63 +26,24 @@ static std::string g_log_level = "info";
 
 static void parse_command_line(int argc, char** argv);
 
-static void
-tutorial_tets_example(Node &mesh)
+static std::string read_nth_line(const std::string& filename, int n)
 {
-    mesh.reset();
+   std::ifstream in(filename.c_str());
 
-    //
-    // (create example tet mesh from blueprint example 2)
-    //
-    // Create a 3D mesh defined on an explicit set of points,
-    // composed of two tets, with two element associated fields
-    //  (`var1` and `var2`)
-    //
+   std::string s;
+   //for performance
+   s.reserve(200);
 
-    // create an explicit coordinate set
-    double X[5] = { -1.0, 0.0, 0.0, 0.0, 1.0 };
-    double Y[5] = { 0.0, -1.0, 0.0, 1.0, 0.0 };
-    double Z[5] = { 0.0, 0.0, 1.0, 0.0, 0.0 };
-    mesh["coordsets/coords/type"] = "explicit";
-    mesh["coordsets/coords/values/x"].set(X, 5);
-    mesh["coordsets/coords/values/y"].set(Y, 5);
-    mesh["coordsets/coords/values/z"].set(Z, 5);
+   //skip N lines
+   for(int i = 0; i < n; ++i)
+       std::getline(in, s);
 
-
-    // add an unstructured topology
-    mesh["topologies/mesh/type"] = "unstructured";
-    // reference the coordinate set by name
-    mesh["topologies/mesh/coordset"] = "coords";
-    // set topology shape type
-    mesh["topologies/mesh/elements/shape"] = "tet";
-    // add a connectivity array for the tets
-    int64 connectivity[8] = { 0, 1, 3, 2, 4, 3, 1, 2 };
-    mesh["topologies/mesh/elements/connectivity"].set(connectivity, 8);
-
-    const int num_elements = 2;
-    float var1_vals[num_elements] = { 0, 1 };
-    float var2_vals[num_elements] = { 1, 0 };
-    
-    // create a field named var1
-    mesh["fields/var1/association"] = "element";
-    mesh["fields/var1/topology"] = "mesh";
-    mesh["fields/var1/values"].set(var1_vals, 2);
-
-    // create a field named var2
-    mesh["fields/var2/association"] = "element";
-    mesh["fields/var2/topology"] = "mesh";
-    mesh["fields/var2/values"].set(var2_vals, 2);
-
-    //  make sure the mesh we created conforms to the blueprint
-    Node verify_info;
-    if(!blueprint::mesh::verify(mesh, verify_info))
-    {
-        std::cout << "Mesh Verify failed!" << std::endl;
-        std::cout << verify_info.to_yaml() << std::endl;
-    }
+   std::getline(in,s);
+   return s;
 }
 
 int main(int argc, char** argv) {
+    MPI_Init(&argc, &argv);
     parse_command_line(argc, argv);
     spdlog::set_level(spdlog::level::from_str(g_log_level));
 
@@ -98,13 +63,13 @@ int main(int argc, char** argv) {
 
         node.sayHello();
 
-        int32_t result;
-        node.computeSum(32, 54, &result);
-	std::cout << "Result is: " << result << std::endl;
 	Node n;
+	n["mpi_comm"] = MPI_Comm_c2f(MPI_COMM_WORLD);
 	n["runtime/type"] = "ascent";
   	n["runtime/vtkm/backend"] = "openmp";
+
 	node.ams_open(n);
+	//a.open(n);
 	Node mesh;
     	conduit::blueprint::mesh::examples::braid("hexs",
         	                                      2,
@@ -112,6 +77,7 @@ int main(int argc, char** argv) {
                         	                      2,
                                 	              mesh);
 
+	//a.publish(mesh);
 	node.ams_publish(mesh);
 
 	Node actions;
@@ -125,8 +91,10 @@ int main(int argc, char** argv) {
 	extracts["e1/params/path"] = "out_export_braid_all_fields";
 	extracts["e1/params/protocol"] = "blueprint/mesh/hdf5";
 
+	//a.execute(actions);
 	node.ams_execute(actions);
 
+	//a.close();
 	node.ams_close();
 
     } catch(const ams::Exception& ex) {
@@ -134,11 +102,17 @@ int main(int argc, char** argv) {
         exit(-1);
     }
 
+    MPI_Finalize();
     return 0;
 }
 
 void parse_command_line(int argc, char** argv) {
+
     try {
+	int rank, size;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+
         TCLAP::CmdLine cmd("Ams client", ' ', "0.1");
         TCLAP::ValueArg<std::string> addressArg("a","address","Address or server", true,"","string");
         TCLAP::ValueArg<unsigned>    providerArg("p", "provider", "Provider id to contact (default 0)", false, 0, "int");
@@ -149,9 +123,23 @@ void parse_command_line(int argc, char** argv) {
         cmd.add(nodeArg);
         cmd.add(logLevel);
         cmd.parse(argc, argv);
-        g_address = addressArg.getValue();
+
+	/* The logic below grabs the server address corresponding the client's MPI rank (MXM case) */
+	size_t pos = 0;
+        g_address_file = addressArg.getValue();
+	std::string delimiter = " ";
+	std::string l = read_nth_line(g_address_file, rank+1);
+	pos = l.find(delimiter);
+	std::string server_rank_str = l.substr(0, pos);
+	std::stringstream s_(server_rank_str);
+	int server_rank;
+	s_ >> server_rank;
+	assert(server_rank == rank);
+	l.erase(0, pos + delimiter.length());
+	g_address = l;
+
         g_provider_id = providerArg.getValue();
-        g_node = nodeArg.getValue();
+        g_node = read_nth_line(nodeArg.getValue(), rank);
         g_log_level = logLevel.getValue();
         g_protocol = g_address.substr(0, g_address.find(":"));
     } catch(TCLAP::ArgException &e) {
