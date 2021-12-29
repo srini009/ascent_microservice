@@ -1,6 +1,3 @@
-Thallium Microservice Template
+Ascent Visualization Microservice 
 ==============================
-
-This project is a template to start developing a Mochi microservice based on Thallium.
-The complete documentation to get started using this template is available
-[here](https://mochi.readthedocs.io/en/latest/templates/02_thallium.html).
+This is an experimental repo implementing a distributed Ascent visualization microservice.
