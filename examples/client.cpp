@@ -77,6 +77,8 @@ int main(int argc, char** argv) {
 		a.open(n);
 	}
 
+	MPI_Barrier(MPI_COMM_WORLD);
+
 	Node mesh;
     	conduit::blueprint::mesh::examples::braid("hexs",
         	                                      32,
@@ -92,15 +94,27 @@ int main(int argc, char** argv) {
 	}*/
 
 	Node actions;
-	Node &add_act = actions.append();
+    	Node &add_act = actions.append();
 	add_act["action"] = "add_queries";
+
+	// declare a queries to ask some questions
 	Node &queries = add_act["queries"] ;
+
+	// Create a 1D binning projected onto the x-axis
 	queries["q1/params/expression"] = "binning('radial','max', [axis('x',num_bins=20)])";
 	queries["q1/params/name"] = "1d_binning";
+
+	// Create a 2D binning projected onto the x-y plane
 	queries["q2/params/expression"] = "binning('radial','max', [axis('x',num_bins=20), axis('y',num_bins=20)])";
 	queries["q2/params/name"] = "2d_binning";
+
+	// Create a binning that emulates a line-out, that is, bin all values
+	// between x = [-1,1], y = [-1,1] along the z-axis in 20 bins.
+	// The result is a 1x1x20 array
 	queries["q3/params/expression"] = "binning('radial','max', [axis('x',[-1,1]), axis('y', [-1,1]), axis('z', num_bins=20)])";
 	queries["q3/params/name"] = "3d_binning";
+
+	MPI_Barrier(MPI_COMM_WORLD);
 
 	/*if(!use_local) {
 		node.ams_execute(actions);
@@ -111,6 +125,8 @@ int main(int argc, char** argv) {
 	if(!use_local) {
 		node.ams_publish_and_execute(mesh, actions);
 	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(!use_local) {
 		node.ams_close();
