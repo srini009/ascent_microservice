@@ -54,7 +54,7 @@ void NodeHandle::ams_open(conduit::Node opts) const {
     auto& rpc = self->m_client->m_ams_open;
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
-    RequestResult<bool> result = rpc.on(ph)(node_id, opts.to_string());
+    RequestResult<bool> result = rpc.on(ph)(node_id, opts.to_string("conduit_json"));
     if(not result.success()) {
         throw Exception(result.error());
     }

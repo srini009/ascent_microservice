@@ -71,11 +71,12 @@ int main(int argc, char** argv) {
 	n["runtime/type"] = "ascent";
   	n["runtime/vtkm/backend"] = "openmp";
 
-	/*if(!use_local) {
+	if(!use_local) {
 		node.ams_open(n);
 	} else {
 		a.open(n);
-	}*/
+	}
+
 	Node mesh;
     	conduit::blueprint::mesh::examples::braid("hexs",
         	                                      32,
@@ -100,10 +101,6 @@ int main(int argc, char** argv) {
 	queries["q2/params/name"] = "2d_binning";
 	queries["q3/params/expression"] = "binning('radial','max', [axis('x',[-1,1]), axis('y', [-1,1]), axis('z', num_bins=20)])";
 	queries["q3/params/name"] = "3d_binning";
-        //Node& add_act2 = actions.append();
-        //add_act2["action"] = "save_session";
-
-	//std::cout << "Stupid : " << (add_act2["action"].as_string() == "save_session") << std::endl;
 
 	/*if(!use_local) {
 		node.ams_execute(actions);
@@ -115,11 +112,11 @@ int main(int argc, char** argv) {
 		node.ams_publish_and_execute(mesh, actions);
 	}
 
-	/*if(!use_local) {
+	if(!use_local) {
 		node.ams_close();
 	} else {
 		a.close();
-	}*/
+	}
 
     } catch(const ams::Exception& ex) {
         std::cerr << ex.what() << std::endl;
