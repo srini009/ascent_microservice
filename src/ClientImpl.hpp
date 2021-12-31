@@ -29,6 +29,7 @@ class ClientImpl {
     tl::remote_procedure m_ams_close;
     tl::remote_procedure m_ams_publish;
     tl::remote_procedure m_ams_execute;
+    tl::remote_procedure m_ams_publish_and_execute;
 
     ClientImpl(const tl::engine& engine)
     : m_engine(engine)
@@ -39,6 +40,7 @@ class ClientImpl {
     , m_ams_close(m_engine.define("ams_close"))
     , m_ams_publish(m_engine.define("ams_publish"))
     , m_ams_execute(m_engine.define("ams_execute"))
+    , m_ams_publish_and_execute(m_engine.define("ams_publish_and_execute"))
     {}
 
     ClientImpl(margo_instance_id mid)

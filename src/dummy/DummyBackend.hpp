@@ -76,6 +76,11 @@ class DummyNode : public ams::Backend {
     ams::RequestResult<bool> ams_execute(std::string actions) override;
 
     /**
+     * @brief Publishes a mesh and executes a set of actions in Ascent.
+     */
+    ams::RequestResult<bool> ams_publish_and_execute(std::string bp_mesh, std::string actions) override;
+
+    /**
      * @brief Compute the sum of two integers.
      *
      * @param x first integer

@@ -65,7 +65,7 @@ void NodeHandle::ams_publish(conduit::Node bp_mesh) const {
     auto& rpc = self->m_client->m_ams_publish;
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
-    RequestResult<bool> result = rpc.on(ph)(node_id, bp_mesh.to_string());
+    RequestResult<bool> result = rpc.on(ph)(node_id, bp_mesh.to_string("conduit_json"));
     if(not result.success()) {
         throw Exception(result.error());
     }
@@ -76,7 +76,18 @@ void NodeHandle::ams_execute(conduit::Node actions) const {
     auto& rpc = self->m_client->m_ams_execute;
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
-    RequestResult<bool> result = rpc.on(ph)(node_id, actions.to_string());
+    RequestResult<bool> result = rpc.on(ph)(node_id, actions.to_string("conduit_json"));
+    if(not result.success()) {
+        throw Exception(result.error());
+    }
+}
+
+void NodeHandle::ams_publish_and_execute(conduit::Node bp_mesh, conduit::Node actions) const {
+    if(not self) throw Exception("Invalid ams::NodeHandle object");
+    auto& rpc = self->m_client->m_ams_publish_and_execute;
+    auto& ph  = self->m_ph;
+    auto& node_id = self->m_node_id;
+    RequestResult<bool> result = rpc.on(ph)(node_id, bp_mesh.to_string("conduit_json"), actions.to_string("conduit_json"));
     if(not result.success()) {
         throw Exception(result.error());
     }

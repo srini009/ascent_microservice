@@ -62,6 +62,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
     tl::remote_procedure m_ams_close;
     tl::remote_procedure m_ams_publish;
     tl::remote_procedure m_ams_execute;
+    tl::remote_procedure m_ams_publish_and_execute;
     // Backends
     std::unordered_map<UUID, std::shared_ptr<Backend>> m_backends;
     tl::mutex m_backends_mtx;
@@ -80,6 +81,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
     , m_ams_close(define("ams_close",  &ProviderImpl::ams_close, pool))
     , m_ams_publish(define("ams_publish",  &ProviderImpl::ams_publish, pool))
     , m_ams_execute(define("ams_execute",  &ProviderImpl::ams_execute, pool))
+    , m_ams_publish_and_execute(define("ams_publish_and_execute",  &ProviderImpl::ams_publish_and_execute, pool))
     {
         spdlog::trace("[provider:{0}] Registered provider with id {0}", id());
     }
@@ -96,6 +98,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         m_ams_open.deregister();
         m_ams_close.deregister();
         m_ams_execute.deregister();
+        m_ams_publish_and_execute.deregister();
         m_ams_publish.deregister();
         spdlog::trace("[provider:{}]    => done!", id());
     }
@@ -342,6 +345,18 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         result = node->ams_execute(actions);
 	req.respond(result);
         spdlog::trace("[provider:{}] Successfully executed ams_execute on node {}", id(), node_id.to_string());
+    }
+
+    void ams_publish_and_execute(const tl::request& req,
+                  const UUID& node_id,
+		  std::string bp_mesh,
+		  std::string actions) {
+        spdlog::trace("[provider:{}] Received ams_publish_and_execute request for node {}", id(), node_id.to_string());
+        RequestResult<bool> result;
+        FIND_NODE(node);
+        result = node->ams_publish_and_execute(bp_mesh, actions);
+	req.respond(result);
+        spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
 
     void ams_publish(const tl::request& req,

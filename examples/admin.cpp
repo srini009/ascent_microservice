@@ -76,7 +76,10 @@ int main(int argc, char** argv) {
 	            admin.destroyNode(g_addresses[i], g_provider_id,
 	                ams::UUID::from_string(g_node.c_str()), g_token);
 	            spdlog::info("Destroyed node {}", g_node);
-	        }
+	        } else if(g_operation == "shutdown") {
+		    admin.shutdownServer(g_addresses[i]);
+	            spdlog::info("Destroyed server {}", g_addresses[i]);
+		}
 
 	        // Any of the above functions may throw a ams::Exception
 	    } catch(const ams::Exception& ex) {
@@ -99,7 +102,7 @@ void parse_command_line(int argc, char** argv) {
         TCLAP::ValueArg<std::string> nodeArg("r","node","Node id", false, ams::UUID().to_string(),"string");
         TCLAP::ValueArg<std::string> configArg("c","config","Node configuration", false,"","string");
         TCLAP::ValueArg<std::string> logLevel("v","verbose", "Log level (trace, debug, info, warning, error, critical, off)", false, "info", "string");
-        std::vector<std::string> options = { "create", "open", "close", "destroy" };
+        std::vector<std::string> options = { "create", "open", "close", "destroy", "shutdown" };
         TCLAP::ValuesConstraint<std::string> allowedOptions(options);
         TCLAP::ValueArg<std::string> operationArg("x","exec","Operation to execute",true,"create",&allowedOptions);
         cmd.add(addressArg);

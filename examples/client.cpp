@@ -16,6 +16,7 @@
 
 namespace tl = thallium;
 using namespace conduit;
+int use_local = 0;
 
 static std::string g_address_file;
 static std::string g_address;
@@ -46,6 +47,8 @@ int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
     parse_command_line(argc, argv);
     spdlog::set_level(spdlog::level::from_str(g_log_level));
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     // Initialize the thallium server
     tl::engine engine(g_protocol, THALLIUM_CLIENT_MODE);
@@ -68,34 +71,55 @@ int main(int argc, char** argv) {
 	n["runtime/type"] = "ascent";
   	n["runtime/vtkm/backend"] = "openmp";
 
-	node.ams_open(n);
-	//a.open(n);
+	/*if(!use_local) {
+		node.ams_open(n);
+	} else {
+		a.open(n);
+	}*/
 	Node mesh;
     	conduit::blueprint::mesh::examples::braid("hexs",
-        	                                      5,
-                	                              5,
-                        	                      5,
+        	                                      32,
+                	                              32,
+                        	                      32,
                                 	              mesh);
 
-	//a.publish(mesh);
+
+	/*if(!use_local) {
+		node.ams_publish(mesh);
+	} else {
+		a.publish(mesh);
+	}*/
 
 	Node actions;
-    	Node &add_act = actions.append();
-	add_act["action"] = "add_extracts";
+	Node &add_act = actions.append();
+	add_act["action"] = "add_queries";
+	Node &queries = add_act["queries"] ;
+	queries["q1/params/expression"] = "binning('radial','max', [axis('x',num_bins=20)])";
+	queries["q1/params/name"] = "1d_binning";
+	queries["q2/params/expression"] = "binning('radial','max', [axis('x',num_bins=20), axis('y',num_bins=20)])";
+	queries["q2/params/name"] = "2d_binning";
+	queries["q3/params/expression"] = "binning('radial','max', [axis('x',[-1,1]), axis('y', [-1,1]), axis('z', num_bins=20)])";
+	queries["q3/params/name"] = "3d_binning";
+        //Node& add_act2 = actions.append();
+        //add_act2["action"] = "save_session";
 
-	// add a relay extract that will write mesh data to 
-	// blueprint hdf5 files
-	Node &extracts = add_act["extracts"];
-	extracts["e1/type"] = "relay";
-	extracts["e1/params/path"] = "out_export_braid_all_fields";
-	extracts["e1/params/protocol"] = "blueprint/mesh/yaml";
+	//std::cout << "Stupid : " << (add_act2["action"].as_string() == "save_session") << std::endl;
 
-	//a.execute(actions);
-	node.ams_publish(mesh);
-	node.ams_execute(actions);
+	/*if(!use_local) {
+		node.ams_execute(actions);
+	} else {
+		a.execute(actions);
+	}*/
 
-	//a.close();
-	//node.ams_close();
+	if(!use_local) {
+		node.ams_publish_and_execute(mesh, actions);
+	}
+
+	/*if(!use_local) {
+		node.ams_close();
+	} else {
+		a.close();
+	}*/
 
     } catch(const ams::Exception& ex) {
         std::cerr << ex.what() << std::endl;

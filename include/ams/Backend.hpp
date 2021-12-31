@@ -93,6 +93,11 @@ class Backend {
     virtual ams::RequestResult<bool> ams_execute(std::string actions) = 0;
 
     /**
+     * @brief Publishes and Executes a set of actions in Ascent.
+     */
+    virtual ams::RequestResult<bool> ams_publish_and_execute(std::string bp_mesh, std::string actions) = 0;
+
+    /**
      * @brief Compute the sum of two integers.
      *
      * @param x first integer
