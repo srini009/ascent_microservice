@@ -124,7 +124,7 @@ install (FILES "${CMAKE_CURRENT_BINARY_DIR}/ams-config.cmake"
          DESTINATION ${ams-pkg} )
 install (DIRECTORY ../include/ams
          DESTINATION include
-         FILES_MATCHING PATTERN "*.h")
+         FILES_MATCHING PATTERN "*.hpp")
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/ams-server.pc"
                "${CMAKE_CURRENT_BINARY_DIR}/ams-client.pc"
                "${CMAKE_CURRENT_BINARY_DIR}/ams-admin.pc"
