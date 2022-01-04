@@ -18,6 +18,7 @@ void DummyNode::sayHello() {
 ams::RequestResult<bool> DummyNode::ams_open(std::string opts) {
     conduit::Node n;
     n.parse(opts,"conduit_json");
+    n["mpi_comm"] = 0; //Use MPI anyway!
     std::cout << "Ascent Init!" << std::endl;
 
     ascent_lib.open(n);
