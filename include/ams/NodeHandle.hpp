@@ -117,11 +117,22 @@ class NodeHandle {
 
     /**
      * @brief Requests the publishing of a mesh and the execution of a set of actions represented as a conduit Node
+     * as an atomic operation.
      *
      * @param[in] bp_mesh conduit::Node
      * @param[in] actions conduit::Node
      */
     void ams_publish_and_execute(conduit::Node bp_mesh, conduit::Node actions) const;
+
+    /**
+     * @brief Requests the publishing of a mesh and the execution of a set of actions represented as a conduit Node
+     * as an atomic operation.
+     *
+     * @param[in] open_opts conduit::Node
+     * @param[in] bp_mesh conduit::Node
+     * @param[in] actions conduit::Node
+     */
+    void ams_open_publish_execute(conduit::Node open_opts, conduit::Node bp_mesh, conduit::Node actions) const;
 
     /**
      * @brief Requests the closing of ascent operation

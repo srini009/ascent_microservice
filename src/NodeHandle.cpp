@@ -93,6 +93,17 @@ void NodeHandle::ams_publish_and_execute(conduit::Node bp_mesh, conduit::Node ac
     }
 }
 
+void NodeHandle::ams_open_publish_execute(conduit::Node open_opts, conduit::Node bp_mesh, conduit::Node actions) const {
+    if(not self) throw Exception("Invalid ams::NodeHandle object");
+    auto& rpc = self->m_client->m_ams_open_publish_execute;
+    auto& ph  = self->m_ph;
+    auto& node_id = self->m_node_id;
+    RequestResult<bool> result = rpc.on(ph)(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), actions.to_string("conduit_json"));
+    if(not result.success()) {
+        throw Exception(result.error());
+    }
+}
+
 void NodeHandle::ams_close() const {
     if(not self) throw Exception("Invalid ams::NodeHandle object");
     auto& rpc = self->m_client->m_ams_close;

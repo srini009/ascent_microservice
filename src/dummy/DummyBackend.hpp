@@ -7,6 +7,7 @@
 #define __DUMMY_BACKEND_HPP
 
 #include <ams/Backend.hpp>
+#include <ascent/ascent.hpp>
 
 using json = nlohmann::json;
 
@@ -16,6 +17,7 @@ using json = nlohmann::json;
 class DummyNode : public ams::Backend {
    
     json m_config;
+    ascent::Ascent ascent_lib;
 
     public:
 
@@ -79,6 +81,11 @@ class DummyNode : public ams::Backend {
      * @brief Publishes a mesh and executes a set of actions in Ascent.
      */
     ams::RequestResult<bool> ams_publish_and_execute(std::string bp_mesh, std::string actions) override;
+
+    /**
+     * @brief Publishes a mesh and executes a set of actions in Ascent.
+     */
+    ams::RequestResult<bool> ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions) override;
 
     /**
      * @brief Compute the sum of two integers.

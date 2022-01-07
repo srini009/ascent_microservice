@@ -9,7 +9,12 @@
 #include <mpi.h>
 
 AMS_REGISTER_BACKEND(dummy, DummyNode);
-ascent::Ascent ascent_lib;
+
+
+/*static ascent::Ascent get_ascent_lib() {
+	static ascent::Ascent a;
+	return a;
+}*/
 
 void DummyNode::sayHello() {
     std::cout << "Hello World" << std::endl;
@@ -18,10 +23,17 @@ void DummyNode::sayHello() {
 ams::RequestResult<bool> DummyNode::ams_open(std::string opts) {
     conduit::Node n;
     n.parse(opts,"conduit_json");
-    n["mpi_comm"] = 0; //Use MPI anyway!
-    std::cout << "Ascent Init!" << std::endl;
+    /* Regardless of whether or not the client uses MPI, me the server needs to use MPI
+     * because I am launched as a separate MPI program */
+    n["mpi_comm"] = 0;
+    n["messages"] = "verbose";
+    std::cout << "Ascent Init with options: " << n.to_yaml() << std::endl;
 
     ascent_lib.open(n);
+
+    conduit::Node x;
+    ascent_lib.info(x);
+    std::cout << "Before execute info is: " << x.to_yaml() << std::endl;
 
     ams::RequestResult<bool> result;
     result.value() = true;
@@ -43,6 +55,10 @@ ams::RequestResult<bool> DummyNode::ams_publish(std::string bp_mesh) {
     std::cout << "Ascent Publish!" << std::endl;
     n.parse(bp_mesh,"conduit_json");
 
+    conduit::Node x;
+    ascent_lib.info(x);
+    std::cout << "Before publish info is: " << x.to_yaml() << std::endl;
+
     ascent_lib.publish(n);
 
     ams::RequestResult<bool> result;
@@ -55,7 +71,31 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
     std::cout << "Ascent Execute!" << std::endl;
     n.parse(actions,"conduit_json");
 
+    conduit::Node x;
+    ascent_lib.info(x);
+    std::cout << "Before execute info is: " << x.to_yaml() << std::endl;
+
     ascent_lib.execute(n);
+
+    ams::RequestResult<bool> result;
+    result.value() = true;
+    return result;
+}
+
+ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions) {
+    conduit::Node n, n_mesh, n_opts;
+    std::cout << "Ascent Open, Publish, Execute, and Close!" << std::endl;
+
+    n.parse(actions,"conduit_json");
+    n_mesh.parse(bp_mesh,"conduit_json");
+    n_opts.parse(open_opts,"conduit_json");
+    n_opts["mpi_comm"] = 0;
+
+    /* Perform the ascent viz as a single, atomic operation within the context of the RPC */
+    ascent_lib.open(n_opts);
+    ascent_lib.publish(n_mesh);
+    ascent_lib.execute(n);
+    ascent_lib.close();
 
     ams::RequestResult<bool> result;
     result.value() = true;
@@ -65,17 +105,13 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
 ams::RequestResult<bool> DummyNode::ams_publish_and_execute(std::string bp_mesh, std::string actions) {
     conduit::Node n, n_mesh;
     std::cout << "Ascent Publish and Execute!" << std::endl;
+
     n.parse(actions,"conduit_json");
     n_mesh.parse(bp_mesh,"conduit_json");
-    std::cout << "Received: " << n.to_yaml() << std::endl;
 
+    /* Publish and execute as a single atomic operation */
     ascent_lib.publish(n_mesh);
     ascent_lib.execute(n);
-
-    conduit::Node x;
-    ascent_lib.close();
-    ascent_lib.info(x);
-    std::cout << "Info is: " << x.to_string() << std::endl;
 
     ams::RequestResult<bool> result;
     result.value() = true;
