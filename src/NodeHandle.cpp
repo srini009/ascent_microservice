@@ -14,6 +14,7 @@
 #include <thallium/serialization/stl/string.hpp>
 #include <thallium/serialization/stl/pair.hpp>
 #include <conduit.hpp>
+#include <mpi.h>
 
 namespace ams {
 
@@ -101,8 +102,8 @@ void NodeHandle::ams_open_publish_execute(conduit::Node open_opts,
     auto& rpc = self->m_client->m_ams_open_publish_execute;
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
+    double start = MPI_Wtime();
     if(req == nullptr) { // synchronous call
-	std::cout << "DA HELLLL" << std::endl;
         RequestResult<bool> response = rpc.on(ph)(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), actions.to_string("conduit_json"));
     	if(not response.success()) {
             throw Exception(response.error());
@@ -122,6 +123,9 @@ void NodeHandle::ams_open_publish_execute(conduit::Node open_opts,
             };
         *req = AsyncRequest(std::move(async_request_impl));
     }
+    double end = MPI_Wtime();
+
+    std::cout << "Total client time inside stub: " << end - start << std::endl;
 }
 
 void NodeHandle::ams_close() const {

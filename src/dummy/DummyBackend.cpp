@@ -86,6 +86,8 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     conduit::Node n, n_mesh, n_opts;
     std::cout << "Ascent Open, Publish, Execute, and Close!" << std::endl;
 
+    double start = MPI_Wtime();
+
     ascent::Ascent a_lib;
     n.parse(actions,"conduit_json");
     n_mesh.parse(bp_mesh,"conduit_json");
@@ -100,6 +102,11 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
 
     ams::RequestResult<bool> result;
     result.value() = true;
+
+    double end = MPI_Wtime();
+
+    std::cout << "Total server time for ascent call: " << end-start << std::endl;
+
     return result;
 }
 
