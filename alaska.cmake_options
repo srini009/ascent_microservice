@@ -1,5 +1,5 @@
 INCLUDE_FLAGS: 
--I/home/users/sramesh/VIZ_SERVICE/spack/opt/spack/linux-ubuntu18.04-haswell/gcc-7.4.0/conduit-0.7.2-zsjo2lbxzvmq7awr3h663myd4gb7rn4i/include/conduit -I/home/users/sramesh/VIZ_SERVICE/spack/opt/spack/linux-ubuntu18.04-haswell/gcc-7.4.0/ascent-0.7.1-ouyd67eucmqukv26m2atf5mxltcr6vlk/include/ascent
+-I/home/users/sramesh/VIZ_SERVICE/spack/opt/spack/linux-ubuntu18.04-haswell/gcc-7.4.0/conduit-develop-7xxlj6o7ej3ahcne7fal3n37fjghfcjc/include/conduit -I/home/users/sramesh/VIZ_SERVICE/spack/opt/spack/linux-ubuntu18.04-haswell/gcc-7.4.0/ascent-develop-u4hcifgkevqn7qt3l2kh5lvzgu7tdpnc/include/ascent
 
 LD_FLAGS:
--L/home/users/sramesh/VIZ_SERVICE/spack/opt/spack/linux-ubuntu18.04-haswell/gcc-7.4.0/conduit-0.7.2-zsjo2lbxzvmq7awr3h663myd4gb7rn4i/lib/ -lconduit -L/home/users/sramesh/VIZ_SERVICE/spack/opt/spack/linux-ubuntu18.04-haswell/gcc-7.4.0/ascent-0.7.1-ouyd67eucmqukv26m2atf5mxltcr6vlk/lib/ -lascent_mpi
+-L/home/users/sramesh/VIZ_SERVICE/spack/opt/spack/linux-ubuntu18.04-haswell/gcc-7.4.0/conduit-develop-7xxlj6o7ej3ahcne7fal3n37fjghfcjc/lib/ -lconduit -L/home/users/sramesh/VIZ_SERVICE/spack/opt/spack/linux-ubuntu18.04-haswell/gcc-7.4.0/ascent-develop-u4hcifgkevqn7qt3l2kh5lvzgu7tdpnc/lib -lascent_mpi

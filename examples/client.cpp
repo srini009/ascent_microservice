@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 	Node n;
 	n["mpi_comm"] = MPI_Comm_c2f(MPI_COMM_WORLD);
 	n["runtime/type"] = "ascent";
-  	n["runtime/vtkm/backend"] = "openmp";
+	//n["runtime/vtkm/backend"] = "openmp";
 
 	if(!use_local) {
 		node.ams_open(n);

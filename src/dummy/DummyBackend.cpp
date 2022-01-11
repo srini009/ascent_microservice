@@ -86,16 +86,17 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     conduit::Node n, n_mesh, n_opts;
     std::cout << "Ascent Open, Publish, Execute, and Close!" << std::endl;
 
+    ascent::Ascent a_lib;
     n.parse(actions,"conduit_json");
     n_mesh.parse(bp_mesh,"conduit_json");
     n_opts.parse(open_opts,"conduit_json");
     n_opts["mpi_comm"] = 0;
 
     /* Perform the ascent viz as a single, atomic operation within the context of the RPC */
-    ascent_lib.open(n_opts);
-    ascent_lib.publish(n_mesh);
-    ascent_lib.execute(n);
-    ascent_lib.close();
+    a_lib.open(n_opts);
+    a_lib.publish(n_mesh);
+    a_lib.execute(n);
+    a_lib.close();
 
     ams::RequestResult<bool> result;
     result.value() = true;

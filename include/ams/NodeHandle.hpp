@@ -131,8 +131,12 @@ class NodeHandle {
      * @param[in] open_opts conduit::Node
      * @param[in] bp_mesh conduit::Node
      * @param[in] actions conduit::Node
+     * @param[in/out] actions async request
      */
-    void ams_open_publish_execute(conduit::Node open_opts, conduit::Node bp_mesh, conduit::Node actions) const;
+    void ams_open_publish_execute(conduit::Node open_opts, 
+		    conduit::Node bp_mesh, 
+		    conduit::Node actions,
+		    AsyncRequest* req = nullptr) const;
 
     /**
      * @brief Requests the closing of ascent operation
