@@ -104,10 +104,7 @@ void NodeHandle::ams_open_publish_execute(conduit::Node open_opts,
     auto& node_id = self->m_node_id;
     double start = MPI_Wtime();
     if(req == nullptr) { // synchronous call
-        RequestResult<bool> response = rpc.on(ph)(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), actions.to_string("conduit_json"));
-    	if(not response.success()) {
-            throw Exception(response.error());
-	}
+        rpc.on(ph)(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), actions.to_string("conduit_json"));
     } else { // asynchronous call
 	std::cout << "Async call..." << std::endl;
         auto async_response = rpc.on(ph).async(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), actions.to_string("conduit_json"));
@@ -115,11 +112,7 @@ void NodeHandle::ams_open_publish_execute(conduit::Node open_opts,
             std::make_shared<AsyncRequestImpl>(std::move(async_response));
         async_request_impl->m_wait_callback =
             [](AsyncRequestImpl& async_request_impl) {
-                RequestResult<bool> response =
                     async_request_impl.m_async_response.wait();
-    		    if(not response.success()) {
-	                throw Exception(response.error());
-		    }
             };
         *req = AsyncRequest(std::move(async_request_impl));
     }

@@ -42,7 +42,7 @@ class ClientImpl {
     , m_ams_publish(m_engine.define("ams_publish"))
     , m_ams_execute(m_engine.define("ams_execute"))
     , m_ams_publish_and_execute(m_engine.define("ams_publish_and_execute"))
-    , m_ams_open_publish_execute(m_engine.define("ams_open_publish_execute"))
+    , m_ams_open_publish_execute(m_engine.define("ams_open_publish_execute").disable_response())
     {}
 
     ClientImpl(margo_instance_id mid)

@@ -82,7 +82,7 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
     return result;
 }
 
-ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions) {
+void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions) {
     conduit::Node n, n_mesh, n_opts;
     std::cout << "Ascent Open, Publish, Execute, and Close!" << std::endl;
 
@@ -92,7 +92,7 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     n.parse(actions,"conduit_json");
     n_mesh.parse(bp_mesh,"conduit_json");
     n_opts.parse(open_opts,"conduit_json");
-    n_opts["mpi_comm"] = 0;
+    n_opts["mpi_comm"] = MPI_Comm_c2f(MPI_COMM_WORLD);
 
     /* Perform the ascent viz as a single, atomic operation within the context of the RPC */
     a_lib.open(n_opts);
@@ -100,14 +100,9 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     a_lib.execute(n);
     a_lib.close();
 
-    ams::RequestResult<bool> result;
-    result.value() = true;
-
     double end = MPI_Wtime();
 
     std::cout << "Total server time for ascent call: " << end-start << std::endl;
-
-    return result;
 }
 
 ams::RequestResult<bool> DummyNode::ams_publish_and_execute(std::string bp_mesh, std::string actions) {
