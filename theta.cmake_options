@@ -1,0 +1,5 @@
+INCLUDE_FLAGS: 
+-I/gpfs/mira-home/sramesh/spack/opt/spack/cray-cnl7-haswell/gcc-9.3.0/conduit-develop-rxcmkcfq2r2zjjy7pqnuw3rt2tnagpnl/include/conduit -I/gpfs/mira-home/sramesh/spack/opt/spack/cray-cnl7-haswell/gcc-9.3.0/ascent-develop-vb4lsrr7a62xmuwwwn5c3dc6ppaidi5h/include/ascent
+
+LD_FLAGS:
+-L/gpfs/mira-home/sramesh/spack/opt/spack/cray-cnl7-haswell/gcc-9.3.0/conduit-develop-rxcmkcfq2r2zjjy7pqnuw3rt2tnagpnl/lib/ -lconduit -L/gpfs/mira-home/sramesh/spack/opt/spack/cray-cnl7-haswell/gcc-9.3.0/ascent-develop-vb4lsrr7a62xmuwwwn5c3dc6ppaidi5h/lib -lascent_mpi
