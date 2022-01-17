@@ -106,7 +106,6 @@ void NodeHandle::ams_open_publish_execute(conduit::Node open_opts,
     if(req == nullptr) { // synchronous call
         rpc.on(ph)(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), actions.to_string("conduit_json"));
     } else { // asynchronous call
-	std::cout << "Async call..." << std::endl;
         auto async_response = rpc.on(ph).async(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), actions.to_string("conduit_json"));
         auto async_request_impl =
             std::make_shared<AsyncRequestImpl>(std::move(async_response));
@@ -117,8 +116,6 @@ void NodeHandle::ams_open_publish_execute(conduit::Node open_opts,
         *req = AsyncRequest(std::move(async_request_impl));
     }
     double end = MPI_Wtime();
-
-    std::cout << "Total client time inside stub: " << end - start << std::endl;
 }
 
 void NodeHandle::ams_close() const {

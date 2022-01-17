@@ -27,13 +27,8 @@ ams::RequestResult<bool> DummyNode::ams_open(std::string opts) {
      * because I am launched as a separate MPI program */
     n["mpi_comm"] = 0;
     n["messages"] = "verbose";
-    std::cout << "Ascent Init with options: " << n.to_yaml() << std::endl;
 
     ascent_lib.open(n);
-
-    conduit::Node x;
-    ascent_lib.info(x);
-    std::cout << "Before execute info is: " << x.to_yaml() << std::endl;
 
     ams::RequestResult<bool> result;
     result.value() = true;
@@ -41,7 +36,6 @@ ams::RequestResult<bool> DummyNode::ams_open(std::string opts) {
 }
 
 ams::RequestResult<bool> DummyNode::ams_close() {
-    std::cout << "Ascent Close!" << std::endl;
 
     ascent_lib.close();
 
@@ -52,12 +46,7 @@ ams::RequestResult<bool> DummyNode::ams_close() {
 
 ams::RequestResult<bool> DummyNode::ams_publish(std::string bp_mesh) {
     conduit::Node n;
-    std::cout << "Ascent Publish!" << std::endl;
     n.parse(bp_mesh,"conduit_json");
-
-    conduit::Node x;
-    ascent_lib.info(x);
-    std::cout << "Before publish info is: " << x.to_yaml() << std::endl;
 
     ascent_lib.publish(n);
 
@@ -68,12 +57,7 @@ ams::RequestResult<bool> DummyNode::ams_publish(std::string bp_mesh) {
 
 ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
     conduit::Node n;
-    std::cout << "Ascent Execute!" << std::endl;
     n.parse(actions,"conduit_json");
-
-    conduit::Node x;
-    ascent_lib.info(x);
-    std::cout << "Before execute info is: " << x.to_yaml() << std::endl;
 
     ascent_lib.execute(n);
 
@@ -84,7 +68,6 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
 
 void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions) {
     conduit::Node n, n_mesh, n_opts;
-    std::cout << "Ascent Open, Publish, Execute, and Close!" << std::endl;
 
     double start = MPI_Wtime();
 
@@ -101,13 +84,15 @@ void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_m
     a_lib.close();
 
     double end = MPI_Wtime();
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    std::cout << "Total server time for ascent call: " << end-start << std::endl;
+    if(rank == 0)
+        std::cout << "Total server time for ascent call: " << end-start << std::endl;
 }
 
 ams::RequestResult<bool> DummyNode::ams_publish_and_execute(std::string bp_mesh, std::string actions) {
     conduit::Node n, n_mesh;
-    std::cout << "Ascent Publish and Execute!" << std::endl;
 
     n.parse(actions,"conduit_json");
     n_mesh.parse(bp_mesh,"conduit_json");
