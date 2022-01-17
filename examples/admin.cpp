@@ -45,11 +45,9 @@ static std::string read_nth_line(const std::string& filename, int n)
 }
 
 int main(int argc, char** argv) {
-    std::cout << "I have to come here!!!." << std::endl;
     parse_command_line(argc, argv);
     spdlog::set_level(spdlog::level::from_str(g_log_level));
     ofstream addr_file;
-    std::cout << "Clearly, I come here with protocol: " << g_protocol << std::endl;
     // Initialize the thallium server
     tl::engine engine(g_protocol, THALLIUM_CLIENT_MODE);
     addr_file.open("nodes.mercury", ios::app);

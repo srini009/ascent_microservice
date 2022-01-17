@@ -4,6 +4,7 @@
  * See COPYRIGHT in top-level directory.
  */
 #include <ams/Provider.hpp>
+#include <ams/Admin.hpp>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -22,6 +23,31 @@ static std::string g_log_level = "info";
 static bool        g_use_progress_thread = false;
 
 static void parse_command_line(int argc, char** argv);
+
+static void setup_admin_nodes(tl::engine engine, std::string server_addr, int rank, int size) {
+    ofstream addr_file;
+
+    // Initialize the thallium server
+    ams::Admin admin(engine);
+
+    for(int i = 0; i < size; i++) {
+        if(rank == i) {
+	    addr_file.open("nodes.mercury", ios::app);
+	    try {
+		    auto id = admin.createNode(server_addr, 0, "dummy", "{\"path\" : \"mydb\" }", "");
+		    // Any of the above functions may throw a ams::Exception
+	    	    spdlog::info("Created node {}", id.to_string());
+		    addr_file << id.to_string() << "\n";
+	    } catch(const ams::Exception& ex) {
+	    	    std::cerr << ex.what() << std::endl;
+	            exit(-1);
+	    }
+	    addr_file.close();
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+    }
+
+}
 
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
@@ -55,6 +81,10 @@ int main(int argc, char** argv) {
     }
 
     spdlog::info("Server running at address {}", (std::string)engine.self());
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    setup_admin_nodes(engine, (std::string)engine.self(), rank, size);
+
     engine.wait_for_finalize();
     MPI_Finalize();
     return 0;

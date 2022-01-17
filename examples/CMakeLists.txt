@@ -1,5 +1,5 @@
 add_executable (example-server ${CMAKE_CURRENT_SOURCE_DIR}/server.cpp)
-target_link_libraries (example-server ams-server -lconduit -lascent_mpi)
+target_link_libraries (example-server ams-server ams-admin -lconduit -lascent_mpi)
 
 add_executable (example-admin ${CMAKE_CURRENT_SOURCE_DIR}/admin.cpp)
 target_link_libraries (example-admin ams-admin)
