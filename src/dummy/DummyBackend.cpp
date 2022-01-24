@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ascent/ascent.hpp>
 #include <mpi.h>
+#include <unistd.h>
 
 AMS_REGISTER_BACKEND(dummy, DummyNode);
 
@@ -69,6 +70,10 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
 void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions) {
     conduit::Node n, n_mesh, n_opts;
 
+    int size;
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
     double start = MPI_Wtime();
 
     ascent::Ascent a_lib;
@@ -77,6 +82,16 @@ void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_m
     n_opts.parse(open_opts,"conduit_json");
     n_opts["mpi_comm"] = MPI_Comm_c2f(MPI_COMM_WORLD);
 
+    /* Checking if all my peers are working on the same request. If not, skip! */
+    int task_id = n_opts["task_id"].to_int();
+    int recv;
+    MPI_Allreduce(&task_id, &recv, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    if(recv != task_id*size) {
+	if(rank == 0) 
+            std::cout << "Skipping this request." << std::endl;
+        return;
+    }
+
     /* Perform the ascent viz as a single, atomic operation within the context of the RPC */
     a_lib.open(n_opts);
     a_lib.publish(n_mesh);
@@ -84,11 +99,10 @@ void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_m
     a_lib.close();
 
     double end = MPI_Wtime();
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     if(rank == 0)
         std::cout << "Total server time for ascent call: " << end-start << std::endl;
+
 }
 
 ams::RequestResult<bool> DummyNode::ams_publish_and_execute(std::string bp_mesh, std::string actions) {

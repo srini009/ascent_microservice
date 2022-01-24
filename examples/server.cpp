@@ -32,7 +32,7 @@ static void setup_admin_nodes(tl::engine engine, std::string server_addr, int ra
 
     for(int i = 0; i < size; i++) {
         if(rank == i) {
-	    addr_file.open("nodes.mercury", ios::app);
+	    addr_file.open(getenv("AMS_NODE_ADDR_FILE"), ios::app);
 	    try {
 		    auto id = admin.createNode(server_addr, 0, "dummy", "{\"path\" : \"mydb\" }", "");
 		    // Any of the above functions may throw a ams::Exception
@@ -66,14 +66,14 @@ int main(int argc, char** argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if(rank == 0) {
-	    addr_file.open("addr.mercury", ios::app);
+	    addr_file.open(getenv("AMS_SERVER_ADDR_FILE"), ios::app);
 	    addr_file << size << "\n";
 	    addr_file.close();
     }
 
     for(int i = 0; i < size; i++) {
 	    if(rank == i) {
-		    addr_file.open("addr.mercury", ios::app);
+		    addr_file.open(getenv("AMS_SERVER_ADDR_FILE"), ios::app);
 		    addr_file << rank << " " << (std::string)engine.self() << "\n";
 		    addr_file.close();
 	    }
