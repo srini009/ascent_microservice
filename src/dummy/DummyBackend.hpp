@@ -8,16 +8,78 @@
 
 #include <ams/Backend.hpp>
 #include <ascent/ascent.hpp>
+#include <queue> 
 
 using json = nlohmann::json;
 
 /**
  * Dummy implementation of an ams Backend.
  */
+
+class ConduitNodeData {
+
+    public:
+
+    conduit::Node m_data;
+    conduit::Node m_open_opts;
+    conduit::Node m_actions;
+    int m_task_id;
+
+    double m_ts;
+    /**
+     * @brief Constructor.
+     */
+    ConduitNodeData(conduit::Node data, conduit::Node open_opts, conduit::Node actions, double ts, int task_id)
+    : m_data(data), 
+      m_open_opts(open_opts),
+      m_actions(actions),
+      m_ts(ts),
+      m_task_id(task_id) {}
+
+    /**
+     * @brief Move-constructor.
+     */
+    ConduitNodeData(ConduitNodeData&&) = default;
+
+    /**
+     * @brief Copy-constructor.
+     */
+    ConduitNodeData(const ConduitNodeData&) = default;
+
+    /**
+     * @brief Move-assignment operator.
+     */
+    ConduitNodeData& operator=(ConduitNodeData&&) = default;
+
+    /**
+     * @brief Copy-assignment operator.
+     */
+    ConduitNodeData& operator=(const ConduitNodeData&) = default;
+
+    /**
+     * @brief Destructor.
+     */
+    virtual ~ConduitNodeData() = default;
+};
+
+class Compare
+{
+public:
+    bool operator() (ConduitNodeData const& a, ConduitNodeData const& b)
+    {
+        if(a.m_ts < b.m_ts)
+   	    return true;
+	else
+	    return false;
+    }
+};
+
+
 class DummyNode : public ams::Backend {
    
     json m_config;
     ascent::Ascent ascent_lib;
+    std::priority_queue <ConduitNodeData, std::vector<ConduitNodeData>, Compare> pq;
 
     public:
 
@@ -85,7 +147,7 @@ class DummyNode : public ams::Backend {
     /**
      * @brief Publishes a mesh and executes a set of actions in Ascent.
      */
-    void ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions) override;
+    void ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions, double ts) override;
 
     /**
      * @brief Compute the sum of two integers.

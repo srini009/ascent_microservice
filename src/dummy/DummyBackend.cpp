@@ -67,7 +67,7 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
     return result;
 }
 
-void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions) {
+void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions, double ts) {
     conduit::Node n, n_mesh, n_opts;
 
     int size;
@@ -82,11 +82,17 @@ void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_m
     n_opts.parse(open_opts,"conduit_json");
     n_opts["mpi_comm"] = MPI_Comm_c2f(MPI_COMM_WORLD);
 
+
     /* Checking if all my peers are working on the same request. If not, skip! */
     int task_id = n_opts["task_id"].to_int();
+    ConduitNodeData c(n_mesh, n_opts, n, ts, task_id);
+    pq.push(c);
+
+    int top_task_id = (pq.top()).task_id;
+    
     int recv;
-    MPI_Allreduce(&task_id, &recv, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-    if(recv != task_id*size) {
+    MPI_Allreduce(&top_task_id, &recv, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    if(recv != top_task_id*size) {
 	if(rank == 0) 
             std::cout << "Skipping this request." << std::endl;
         return;

@@ -354,11 +354,12 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
                   const UUID& node_id,
 		  std::string open_opts,
 		  std::string bp_mesh,
-		  std::string actions) {
+		  std::string actions,
+		  double ts) {
         spdlog::trace("[provider:{}] Received ams_open_publish_execute request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
-        node->ams_open_publish_execute(open_opts, bp_mesh, actions);
+        node->ams_open_publish_execute(open_opts, bp_mesh, actions, ts);
         spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
 
