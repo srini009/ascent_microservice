@@ -355,7 +355,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
 		  std::string open_opts,
 		  std::string bp_mesh,
 		  std::string actions,
-		  double ts) {
+		  unsigned int ts) {
         spdlog::trace("[provider:{}] Received ams_open_publish_execute request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);

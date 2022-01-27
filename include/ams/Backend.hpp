@@ -100,7 +100,7 @@ class Backend {
     /**
      * @brief Publishes and Executes a set of actions in Ascent.
      */
-    virtual void ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions, double ts) = 0;
+    virtual void ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions, unsigned int ts) = 0;
 
     /**
      * @brief Compute the sum of two integers.

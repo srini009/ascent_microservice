@@ -25,11 +25,11 @@ class ConduitNodeData {
     conduit::Node m_actions;
     int m_task_id;
 
-    double m_ts;
+    unsigned int m_ts;
     /**
      * @brief Constructor.
      */
-    ConduitNodeData(conduit::Node data, conduit::Node open_opts, conduit::Node actions, double ts, int task_id)
+    ConduitNodeData(conduit::Node data, conduit::Node open_opts, conduit::Node actions, unsigned int ts, int task_id)
     : m_data(data), 
       m_open_opts(open_opts),
       m_actions(actions),
@@ -67,7 +67,7 @@ class Compare
 public:
     bool operator() (ConduitNodeData const& a, ConduitNodeData const& b)
     {
-        if(a.m_ts < b.m_ts)
+        if(a.m_ts > b.m_ts)
    	    return true;
 	else
 	    return false;
@@ -147,7 +147,7 @@ class DummyNode : public ams::Backend {
     /**
      * @brief Publishes a mesh and executes a set of actions in Ascent.
      */
-    void ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions, double ts) override;
+    void ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions, unsigned int ts) override;
 
     /**
      * @brief Compute the sum of two integers.

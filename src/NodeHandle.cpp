@@ -97,7 +97,7 @@ void NodeHandle::ams_publish_and_execute(conduit::Node bp_mesh, conduit::Node ac
 void NodeHandle::ams_open_publish_execute(conduit::Node open_opts, 
 		conduit::Node bp_mesh,
 	       	conduit::Node actions,
-		double ts,
+		unsigned int ts,
 		AsyncRequest* req) const {
     if(not self) throw Exception("Invalid ams::NodeHandle object");
     auto& rpc = self->m_client->m_ams_open_publish_execute;

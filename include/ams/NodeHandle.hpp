@@ -137,7 +137,7 @@ class NodeHandle {
     void ams_open_publish_execute(conduit::Node open_opts, 
 		    conduit::Node bp_mesh, 
 		    conduit::Node actions,
-		    double ts,
+		    unsigned int ts,
 		    AsyncRequest* req = nullptr) const;
 
     /**
