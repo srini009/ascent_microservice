@@ -147,7 +147,7 @@ class DummyNode : public ams::Backend {
     /**
      * @brief Publishes a mesh and executes a set of actions in Ascent.
      */
-    void ams_open_publish_execute(std::string open_opts, std::string bp_mesh, std::string actions, unsigned int ts) override;
+    void ams_open_publish_execute(std::string open_opts, std::string bp_mesh_data, size_t mesh_size, std::string actions, unsigned int ts) override;
 
     /**
      * @brief Compute the sum of two integers.

@@ -95,7 +95,8 @@ void NodeHandle::ams_publish_and_execute(conduit::Node bp_mesh, conduit::Node ac
 }
 
 void NodeHandle::ams_open_publish_execute(conduit::Node open_opts, 
-		conduit::Node bp_mesh,
+		thallium::bulk bp_mesh,
+		size_t mesh_size,
 	       	conduit::Node actions,
 		unsigned int ts,
 		AsyncRequest* req) const {
@@ -104,10 +105,11 @@ void NodeHandle::ams_open_publish_execute(conduit::Node open_opts,
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
     double start = MPI_Wtime();
+    
     if(req == nullptr) { // synchronous call
-        rpc.on(ph)(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), actions.to_string("conduit_json"), ts);
+        rpc.on(ph)(node_id, open_opts.to_string("conduit_json"), bp_mesh, mesh_size, actions.to_string("conduit_json"), ts);
     } else { // asynchronous call
-        auto async_response = rpc.on(ph).async(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), actions.to_string("conduit_json"), ts);
+        auto async_response = rpc.on(ph).async(node_id, open_opts.to_string("conduit_json"), bp_mesh, mesh_size, actions.to_string("conduit_json"), ts);
         auto async_request_impl =
             std::make_shared<AsyncRequestImpl>(std::move(async_response));
         async_request_impl->m_wait_callback =

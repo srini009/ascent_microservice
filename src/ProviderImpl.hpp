@@ -16,7 +16,10 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
+#include <ascent/ascent.hpp>
+
 #include <tuple>
+#include <mpi.h>
 
 #define FIND_NODE(__var__) \
         std::shared_ptr<Backend> __var__;\
@@ -32,6 +35,8 @@
             }\
             __var__ = it->second;\
         }while(0)
+
+#define MAX_BULK_STRING_SIZE 1000000
 
 namespace ams {
 
@@ -353,13 +358,38 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
     void ams_open_publish_execute(const tl::request& req,
                   const UUID& node_id,
 		  std::string open_opts,
-		  std::string bp_mesh,
+		  tl::bulk bp_mesh,
+		  size_t mesh_size,
 		  std::string actions,
 		  unsigned int ts) {
         spdlog::trace("[provider:{}] Received ams_open_publish_execute request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
-        node->ams_open_publish_execute(open_opts, bp_mesh, actions, ts);
+
+	/* Perform the bulk transfer */
+	tl::endpoint ep = req.get_endpoint();
+	std::vector<char> v(mesh_size);
+	std::vector<std::pair<void*,std::size_t>> segments(1);
+	segments[0].first  = (void*)(&v[0]);
+	segments[0].second = v.size();
+	tl::bulk local = get_engine().expose(segments, tl::bulk_mode::write_only);
+	bp_mesh.on(ep) >> local;
+	std::string bp_mesh_data(v.begin(), v.end()-1);
+
+	/*int rank, size;
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	conduit::Node n;
+	try {
+		n.parse(bp_mesh_data, "conduit_json");
+		if(rank == 22)
+			std::cerr << bp_mesh_data << std::endl;
+	} catch (const std::exception& e) {
+		std::cerr << "Rank: " << rank << " screws up " << std::endl;
+	}*/
+
+        node->ams_open_publish_execute(open_opts, bp_mesh_data, mesh_size, actions, ts);
         spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
 
