@@ -69,11 +69,15 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
     return result;
 }
 
-void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh_data, size_t mesh_size, std::string actions, unsigned int ts) {
+ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts) {
     conduit::Node n, n_mesh, n_opts;
 
     int size;
     int rank;
+
+    ams::RequestResult<bool> result;
+    result.value() = true;
+
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     double start = MPI_Wtime();
@@ -81,7 +85,7 @@ void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_m
 
     ascent::Ascent a_lib;
     n.parse(actions,"conduit_json");
-    n_mesh.parse(bp_mesh_data,"conduit_json");
+    n_mesh.parse(bp_mesh,"conduit_json");
     n_opts.parse(open_opts,"conduit_json");
     n_opts["mpi_comm"] = MPI_Comm_c2f(MPI_COMM_WORLD);
 
@@ -97,7 +101,7 @@ void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_m
         if(rank == 0) {
             std::cerr << "Priority queue contains: " << pq.size() << " items. Waiting till warmup is complete.." << std::endl;
 	}
-	return;
+	return result;
     }
 
     int top_task_id = (pq.top()).m_task_id;
@@ -107,7 +111,7 @@ void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_m
     if(recv != top_task_id*size) {
 	        if(rank == 0)
                     std::cerr << "Skipping this request. Size of pq: " << pq.size() << std::endl;
-        return;
+        return result;
     } else {
 	if(rank == 0) {
             std::cerr << "Request is valid. Proceeding with the Ascent computation. Num items in queue: " << pq.size() << std::endl;
@@ -127,6 +131,8 @@ void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_m
 
     if(rank == 0)
         std::cerr << "Total server time for ascent call: " << end-start << std::endl;
+
+    return result;
 
 }
 

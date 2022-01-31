@@ -6,6 +6,7 @@ spack:
   - mochi-thallium %gcc@9.3.0
   - mochi-margo@develop-test %gcc@9.3.0
   - ascent@develop~openmp~test~fortran ^conduit@develop ^vtk-h@0.8.0~openmp ^vtk-m@1.7.0+shared+mpi~openmp %gcc@9.3.0
+  - mercury@develop+udreg
   - mochi-abt-io %gcc@9.3.0
   - libfabric fabrics=gni
   - mercury +udreg

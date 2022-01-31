@@ -96,7 +96,7 @@ void NodeHandle::ams_publish_and_execute(conduit::Node bp_mesh, conduit::Node ac
 }
 
 thallium::async_response NodeHandle::ams_open_publish_execute(conduit::Node open_opts, 
-		thallium::bulk bp_mesh,
+		conduit::Node bp_mesh,
 		size_t mesh_size,
 	       	conduit::Node actions,
 		unsigned int ts) const {
@@ -104,8 +104,8 @@ thallium::async_response NodeHandle::ams_open_publish_execute(conduit::Node open
     auto& rpc = self->m_client->m_ams_open_publish_execute;
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
-    
-    return rpc.on(ph).async(node_id, open_opts.to_string("conduit_json"), bp_mesh, mesh_size, actions.to_string("conduit_json"), ts);
+    auto response = rpc.on(ph).async(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), mesh_size, actions.to_string("conduit_json"), ts);
+    return response;
 }
 
 void NodeHandle::ams_close() const {

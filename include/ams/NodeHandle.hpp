@@ -134,7 +134,7 @@ class NodeHandle {
      * @param[in/out] actions async request
      */
     thallium::async_response ams_open_publish_execute(conduit::Node open_opts, 
-		    thallium::bulk bp_mesh, 
+		    conduit::Node bp_mesh, 
 		    size_t mesh_size,
 		    conduit::Node actions,
 		    unsigned int ts) const;
