@@ -15,9 +15,8 @@
 #include <ams/AsyncRequest.hpp>
 #include <conduit/conduit.hpp>
 
-namespace ams {
-
 namespace tl = thallium;
+namespace ams {
 
 class Client;
 class NodeHandleImpl;
@@ -134,12 +133,11 @@ class NodeHandle {
      * @param[in] ts      timestamp
      * @param[in/out] actions async request
      */
-    void ams_open_publish_execute(conduit::Node open_opts, 
+    thallium::async_response ams_open_publish_execute(conduit::Node open_opts, 
 		    thallium::bulk bp_mesh, 
 		    size_t mesh_size,
 		    conduit::Node actions,
-		    unsigned int ts,
-		    AsyncRequest* req = nullptr) const;
+		    unsigned int ts) const;
 
     /**
      * @brief Requests the closing of ascent operation

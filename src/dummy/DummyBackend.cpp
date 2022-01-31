@@ -87,20 +87,20 @@ void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_m
 
 
     /* Checking if all my peers are working on the same request. If not, skip! */
-    /*int task_id = n_opts["task_id"].to_int();
+    int task_id = n_opts["task_id"].to_int();
     ConduitNodeData c(n_mesh, n_opts, n, ts, task_id);
-    pq.push(c);*/
+    pq.push(c);
 
 
     /* Waiting until warmup is complete.. */
-    /*if(pq.size() <= WARMUP_PERIOD) {
+    if(pq.size() <= WARMUP_PERIOD) {
         if(rank == 0) {
             std::cerr << "Priority queue contains: " << pq.size() << " items. Waiting till warmup is complete.." << std::endl;
 	}
 	return;
-    }*/
+    }
 
-    /*int top_task_id = (pq.top()).m_task_id;
+    int top_task_id = (pq.top()).m_task_id;
     
     int recv;
     MPI_Allreduce(&top_task_id, &recv, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
@@ -112,16 +112,16 @@ void DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_m
 	if(rank == 0) {
             std::cerr << "Request is valid. Proceeding with the Ascent computation. Num items in queue: " << pq.size() << std::endl;
 	}
-    }*/
+    }
 
     /* Perform the ascent viz as a single, atomic operation within the context of the RPC */
-    /*a_lib.open((pq.top()).m_open_opts);
+    a_lib.open((pq.top()).m_open_opts);
     a_lib.publish((pq.top()).m_data);
     a_lib.execute((pq.top()).m_actions);
-    a_lib.close();*/
+    a_lib.close();
 
     /* Pop the top element */
-    //pq.pop();
+    pq.pop();
 
     double end = MPI_Wtime();
 

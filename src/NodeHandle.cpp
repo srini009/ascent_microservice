@@ -13,6 +13,7 @@
 
 #include <thallium/serialization/stl/string.hpp>
 #include <thallium/serialization/stl/pair.hpp>
+#include <thallium/async_response.hpp>
 #include <conduit.hpp>
 #include <mpi.h>
 
@@ -94,31 +95,17 @@ void NodeHandle::ams_publish_and_execute(conduit::Node bp_mesh, conduit::Node ac
     }
 }
 
-void NodeHandle::ams_open_publish_execute(conduit::Node open_opts, 
+thallium::async_response NodeHandle::ams_open_publish_execute(conduit::Node open_opts, 
 		thallium::bulk bp_mesh,
 		size_t mesh_size,
 	       	conduit::Node actions,
-		unsigned int ts,
-		AsyncRequest* req) const {
+		unsigned int ts) const {
     if(not self) throw Exception("Invalid ams::NodeHandle object");
     auto& rpc = self->m_client->m_ams_open_publish_execute;
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
-    double start = MPI_Wtime();
     
-    if(req == nullptr) { // synchronous call
-        rpc.on(ph)(node_id, open_opts.to_string("conduit_json"), bp_mesh, mesh_size, actions.to_string("conduit_json"), ts);
-    } else { // asynchronous call
-        auto async_response = rpc.on(ph).async(node_id, open_opts.to_string("conduit_json"), bp_mesh, mesh_size, actions.to_string("conduit_json"), ts);
-        auto async_request_impl =
-            std::make_shared<AsyncRequestImpl>(std::move(async_response));
-        async_request_impl->m_wait_callback =
-            [](AsyncRequestImpl& async_request_impl) {
-                    async_request_impl.m_async_response.wait();
-            };
-        *req = AsyncRequest(std::move(async_request_impl));
-    }
-    double end = MPI_Wtime();
+    return rpc.on(ph).async(node_id, open_opts.to_string("conduit_json"), bp_mesh, mesh_size, actions.to_string("conduit_json"), ts);
 }
 
 void NodeHandle::ams_close() const {
