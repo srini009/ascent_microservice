@@ -161,7 +161,6 @@ ams::RequestResult<bool> DummyNode::destroy() {
     ams::RequestResult<bool> result;
     result.value() = true;
     // or result.success() = true
-    std::cerr << "I am shutting down...but I have: " << pq.size() << " items in my priority queue." << std::endl;
     return result;
 }
 
