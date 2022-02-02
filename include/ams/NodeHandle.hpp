@@ -108,6 +108,12 @@ class NodeHandle {
     void ams_publish(conduit::Node bp_mesh) const;
 
     /**
+     * @brief Executes pending requests
+     *
+     */
+    void ams_execute_pending_requests() const;
+
+    /**
      * @brief Requests the execution of a set of actions represented as a conduit Node
      *
      * @param[in] actions conduit::Node

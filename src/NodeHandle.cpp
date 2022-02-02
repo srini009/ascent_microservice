@@ -51,6 +51,14 @@ void NodeHandle::sayHello() const {
 }
 
 /* SR: Core Ascent APIs */
+void NodeHandle::ams_execute_pending_requests() const {
+    if(not self) throw Exception("Invalid ams::NodeHandle object");
+    auto& rpc = self->m_client->m_ams_execute_pending_requests;
+    auto& ph  = self->m_ph;
+    auto& node_id = self->m_node_id;
+    rpc.on(ph)(node_id);
+}
+
 void NodeHandle::ams_open(conduit::Node opts) const {
     if(not self) throw Exception("Invalid ams::NodeHandle object");
     auto& rpc = self->m_client->m_ams_open;

@@ -120,6 +120,11 @@ class DummyNode : public ams::Backend {
     void sayHello() override;
 
     /**
+     * @brief Executes pending requests
+     */
+    void ams_execute_pending_requests() override;
+
+    /**
      * @brief Opens Ascent with a given set of actions.
      */
     ams::RequestResult<bool> ams_open(std::string opts) override;

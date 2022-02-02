@@ -69,6 +69,47 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
     return result;
 }
 
+void DummyNode::ams_execute_pending_requests() {
+    int size;
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    double start = MPI_Wtime();
+
+    ascent::Ascent a_lib;
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if(rank == 0)
+        std::cout << "Server has received execute_pending_requests notification. " << std::endl;
+    while(pq.size() != 0) {
+        int top_task_id = (pq.top()).m_task_id;
+        int recv;
+        MPI_Allreduce(&top_task_id, &recv, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+        if(recv != top_task_id*size) {
+	    if(rank == 0)
+                std::cerr << "Skipping this request. Size of pq: " << pq.size() << std::endl;
+        } else {
+	    if(rank == 0)
+                std::cerr << "Request is valid. Proceeding with the Ascent computation. Num items in queue: " << pq.size() << std::endl;
+	}
+        /* Perform the ascent viz as a single, atomic operation within the context of the RPC */
+        a_lib.open((pq.top()).m_open_opts);
+        a_lib.publish((pq.top()).m_data);
+        a_lib.execute((pq.top()).m_actions);
+        a_lib.close();
+
+        /* Pop the top element */
+        pq.pop();
+    }
+
+    double end = MPI_Wtime();
+
+    if(rank == 0)
+        std::cerr << "Total server time for finishing pending requests: " << end-start << std::endl;
+
+}
+
 ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts) {
     conduit::Node n, n_mesh, n_opts;
 
@@ -95,7 +136,9 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     ConduitNodeData c(n_mesh, n_opts, n, ts, task_id);
     pq.push(c);
 
+    return result;
 
+    /* TODO: Execute the code below if the flag "EXECUTE_IMMEDIATELY" is set */
     /* Waiting until warmup is complete.. */
     if(pq.size() <= WARMUP_PERIOD) {
         if(rank == 0) {

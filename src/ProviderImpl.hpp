@@ -69,6 +69,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
     tl::remote_procedure m_ams_execute;
     tl::remote_procedure m_ams_publish_and_execute;
     tl::remote_procedure m_ams_open_publish_execute;
+    tl::remote_procedure m_ams_execute_pending_requests;
     // Backends
     std::unordered_map<UUID, std::shared_ptr<Backend>> m_backends;
     tl::mutex m_backends_mtx;
@@ -89,6 +90,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
     , m_ams_execute(define("ams_execute",  &ProviderImpl::ams_execute, pool))
     , m_ams_publish_and_execute(define("ams_publish_and_execute",  &ProviderImpl::ams_publish_and_execute, pool))
     , m_ams_open_publish_execute(define("ams_open_publish_execute",  &ProviderImpl::ams_open_publish_execute, pool))
+    , m_ams_execute_pending_requests(define("ams_execute_pending_requests",  &ProviderImpl::ams_execute_pending_requests, pool))
     {
         spdlog::trace("[provider:{0}] Registered provider with id {0}", id());
     }
@@ -107,6 +109,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         m_ams_execute.deregister();
         m_ams_publish_and_execute.deregister();
         m_ams_open_publish_execute.deregister();
+        m_ams_execute_pending_requests.deregister();
         m_ams_publish.deregister();
         spdlog::trace("[provider:{}]    => done!", id());
     }
@@ -368,6 +371,15 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
 
 	result = node->ams_open_publish_execute(open_opts, bp_mesh, mesh_size, actions, ts);
 	req.respond(result);
+        spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
+    }
+
+    void ams_execute_pending_requests(const tl::request& req,
+                  const UUID& node_id) {
+        spdlog::trace("[provider:{}] Received ams_execute_pending_requests request for node {}", id(), node_id.to_string());
+        RequestResult<bool> result;
+        FIND_NODE(node);
+	node->ams_execute_pending_requests();
         spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
 
