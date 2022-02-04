@@ -69,6 +69,9 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
     return result;
 }
 
+/* Go through priority queue and execute all the pending requests one by one */
+/* If this is called AFTER all the clients have sent me their data, it is virtually
+ * guaranteed to execute in the order of the client timestamp */
 void DummyNode::ams_execute_pending_requests() {
     int size;
     int rank;
@@ -80,8 +83,6 @@ void DummyNode::ams_execute_pending_requests() {
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    if(rank == 0)
-        std::cout << "Server has received execute_pending_requests notification. " << std::endl;
     while(pq.size() != 0) {
         int top_task_id = (pq.top()).m_task_id;
         int recv;
@@ -136,16 +137,13 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     ConduitNodeData c(n_mesh, n_opts, n, ts, task_id);
     pq.push(c);
 
-    return result;
+    /* By default, return quickly here and send a response to the client saying "I got your data safely". */
 
-    /* TODO: Execute the code below if the flag "EXECUTE_IMMEDIATELY" is set */
-    /* Waiting until warmup is complete.. */
-    if(pq.size() <= WARMUP_PERIOD) {
-        if(rank == 0) {
-            std::cerr << "Priority queue contains: " << pq.size() << " items. Waiting till warmup is complete.." << std::endl;
-	}
-	return result;
-    }
+//#ifndef AMS_EXECUTE_EAGERLY
+    return result;
+//#else
+
+    /* Execute the code below if the flag "AMS_EXECUTE_EAGERLY" is set */
 
     int top_task_id = (pq.top()).m_task_id;
     
@@ -176,6 +174,7 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
         std::cerr << "Total server time for ascent call: " << end-start << std::endl;
 
     return result;
+//#endif  /* AMS_EXECUTE_EAGERLY */
 
 }
 
