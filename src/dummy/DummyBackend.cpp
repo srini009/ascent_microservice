@@ -126,9 +126,9 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
 
 
     ascent::Ascent a_lib;
-    n.parse(actions,"conduit_json");
-    n_mesh.parse(bp_mesh,"conduit_json");
-    n_opts.parse(open_opts,"conduit_json");
+    n.parse(actions,"conduit_base64_json");
+    n_mesh.parse(bp_mesh,"conduit_base64_json");
+    n_opts.parse(open_opts,"conduit_base64_json");
     n_opts["mpi_comm"] = MPI_Comm_c2f(MPI_COMM_WORLD);
 
 
@@ -140,7 +140,7 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     /* By default, return quickly here and send a response to the client saying "I got your data safely". */
 
 //#ifndef AMS_EXECUTE_EAGERLY
-    return result;
+//    return result;
 //#else
 
     /* Execute the code below if the flag "AMS_EXECUTE_EAGERLY" is set */

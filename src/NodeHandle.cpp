@@ -112,7 +112,7 @@ thallium::async_response NodeHandle::ams_open_publish_execute(conduit::Node open
     auto& rpc = self->m_client->m_ams_open_publish_execute;
     auto& ph  = self->m_ph;
     auto& node_id = self->m_node_id;
-    auto response = rpc.on(ph).async(node_id, open_opts.to_string("conduit_json"), bp_mesh.to_string("conduit_json"), mesh_size, actions.to_string("conduit_json"), ts);
+    auto response = rpc.on(ph).async(node_id, open_opts.to_string("conduit_base64_json"), bp_mesh.to_string("conduit_base64_json"), mesh_size, actions.to_string("conduit_base64_json"), ts);
     return response;
 }
 
