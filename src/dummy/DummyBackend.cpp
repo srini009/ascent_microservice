@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 
-#define WARMUP_PERIOD 1
+#define WARMUP_PERIOD 0
 AMS_REGISTER_BACKEND(dummy, DummyNode);
 
 
@@ -72,7 +72,7 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
 /* Go through priority queue and execute all the pending requests one by one */
 /* If this is called AFTER all the clients have sent me their data, it is virtually
  * guaranteed to execute in the order of the client timestamp */
-void DummyNode::ams_execute_pending_requests() {
+void DummyNode::ams_execute_pending_requests(size_t pool_size) {
     int size;
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -82,6 +82,9 @@ void DummyNode::ams_execute_pending_requests() {
     ascent::Ascent a_lib;
 
     MPI_Barrier(MPI_COMM_WORLD);
+
+    if(rank == 0)
+        std::cerr << "Number of pending entries in pq: " << pq.size() << " and number of pending items in ABT pool: " << pool_size << std::endl;
 
     while(pq.size() != 0) {
         int top_task_id = (pq.top()).m_task_id;
@@ -111,7 +114,7 @@ void DummyNode::ams_execute_pending_requests() {
 
 }
 
-ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts) {
+ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts, size_t pool_size) {
     conduit::Node n, n_mesh, n_opts;
 
     int size;
@@ -137,7 +140,6 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     ConduitNodeData c(n_mesh, n_opts, n, ts, task_id);
     pq.push(c);
 
-    /* By default, return quickly here and send a response to the client saying "I got your data safely". */
 
 //#ifndef AMS_EXECUTE_EAGERLY
 //    return result;
@@ -151,11 +153,11 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     MPI_Allreduce(&top_task_id, &recv, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     if(recv != top_task_id*size) {
 	        if(rank == 0)
-                    std::cerr << "Skipping this request. Size of pq: " << pq.size() << std::endl;
+                    std::cerr << "Skipping this request. Size of pq: " << pq.size() << " and size of ABT pool: " << pool_size << std::endl;
         return result;
     } else {
 	if(rank == 0) {
-            std::cerr << "Request is valid. Proceeding with the Ascent computation. Num items in queue: " << pq.size() << std::endl;
+            std::cerr << "Request is valid. Size of pq: " << pq.size() << " and size of ABT pool: " << pool_size << std::endl;
 	}
     }
 

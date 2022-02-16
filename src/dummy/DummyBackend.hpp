@@ -122,7 +122,7 @@ class DummyNode : public ams::Backend {
     /**
      * @brief Executes pending requests
      */
-    void ams_execute_pending_requests() override;
+    void ams_execute_pending_requests(size_t pool_size) override;
 
     /**
      * @brief Opens Ascent with a given set of actions.
@@ -152,7 +152,7 @@ class DummyNode : public ams::Backend {
     /**
      * @brief Publishes a mesh and executes a set of actions in Ascent.
      */
-    ams::RequestResult<bool> ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts) override;
+    ams::RequestResult<bool> ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts, size_t pool_size) override;
 
     /**
      * @brief Compute the sum of two integers.

@@ -369,7 +369,9 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         RequestResult<bool> result;
         FIND_NODE(node);
 
-	result = node->ams_open_publish_execute(open_opts, bp_mesh, mesh_size, actions, ts);
+	auto engine = get_engine();
+	auto pool = engine.get_handler_pool();
+	result = node->ams_open_publish_execute(open_opts, bp_mesh, mesh_size, actions, ts, pool.total_size());
 	req.respond(result);
         spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
@@ -379,7 +381,9 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         spdlog::trace("[provider:{}] Received ams_execute_pending_requests request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
-	node->ams_execute_pending_requests();
+	auto engine = get_engine();
+	auto pool = engine.get_handler_pool();
+	node->ams_execute_pending_requests(pool.total_size());
         spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
 
