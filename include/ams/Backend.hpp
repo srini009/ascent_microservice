@@ -12,6 +12,7 @@
 #include <functional>
 #include <nlohmann/json.hpp>
 #include <thallium.hpp>
+#include <mpi.h>
 
 /**
  * @brief Helper class to register backend types into the backend factory.
@@ -100,12 +101,12 @@ class Backend {
     /**
      * @brief Executes the pending Ascent viz requests.
      */
-    virtual void ams_execute_pending_requests(size_t pool_size) = 0;
+    virtual void ams_execute_pending_requests(size_t pool_size, MPI_Comm comm) = 0;
 
     /**
      * @brief Publishes and Executes a set of actions in Ascent.
      */
-    virtual ams::RequestResult<bool> ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts, size_t pool_size) = 0;
+    virtual ams::RequestResult<bool> ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts, size_t pool_size, MPI_Comm comm) = 0;
 
     /**
      * @brief Compute the sum of two integers.

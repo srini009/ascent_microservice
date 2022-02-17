@@ -72,16 +72,16 @@ ams::RequestResult<bool> DummyNode::ams_execute(std::string actions) {
 /* Go through priority queue and execute all the pending requests one by one */
 /* If this is called AFTER all the clients have sent me their data, it is virtually
  * guaranteed to execute in the order of the client timestamp */
-void DummyNode::ams_execute_pending_requests(size_t pool_size) {
+void DummyNode::ams_execute_pending_requests(size_t pool_size, MPI_Comm comm) {
     int size;
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_size(comm, &size);
     double start = MPI_Wtime();
 
     ascent::Ascent a_lib;
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(comm);
 
     if(rank == 0)
         std::cerr << "Number of pending entries in pq: " << pq.size() << " and number of pending items in ABT pool: " << pool_size << std::endl;
@@ -89,7 +89,7 @@ void DummyNode::ams_execute_pending_requests(size_t pool_size) {
     while(pq.size() != 0) {
         int top_task_id = (pq.top()).m_task_id;
         int recv;
-        MPI_Allreduce(&top_task_id, &recv, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&top_task_id, &recv, 1, MPI_INT, MPI_SUM, comm);
         if(recv != top_task_id*size) {
 	    if(rank == 0)
                 std::cerr << "Skipping this request. Size of pq: " << pq.size() << std::endl;
@@ -114,7 +114,7 @@ void DummyNode::ams_execute_pending_requests(size_t pool_size) {
 
 }
 
-ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts, size_t pool_size) {
+ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts, size_t pool_size, MPI_Comm comm) {
     conduit::Node n, n_mesh, n_opts;
 
     int size;
@@ -123,8 +123,8 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     ams::RequestResult<bool> result;
     result.value() = true;
 
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_size(comm, &size);
     double start = MPI_Wtime();
 
 
@@ -132,7 +132,7 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     n.parse(actions,"conduit_base64_json");
     n_mesh.parse(bp_mesh,"conduit_base64_json");
     n_opts.parse(open_opts,"conduit_base64_json");
-    n_opts["mpi_comm"] = MPI_Comm_c2f(MPI_COMM_WORLD);
+    n_opts["mpi_comm"] = MPI_Comm_c2f(comm);
 
 
     /* Checking if all my peers are working on the same request. If not, skip! */
@@ -150,7 +150,7 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     int top_task_id = (pq.top()).m_task_id;
     
     int recv;
-    MPI_Allreduce(&top_task_id, &recv, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&top_task_id, &recv, 1, MPI_INT, MPI_SUM, comm);
     if(recv != top_task_id*size) {
 	        if(rank == 0)
                     std::cerr << "Skipping this request. Size of pq: " << pq.size() << " and size of ABT pool: " << pool_size << std::endl;

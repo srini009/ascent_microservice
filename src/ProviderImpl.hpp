@@ -53,6 +53,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
 
     std::string          m_token;
     tl::pool             m_pool;
+    MPI_Comm             m_comm;
     // Admin RPC
     tl::remote_procedure m_create_node;
     tl::remote_procedure m_open_node;
@@ -74,9 +75,9 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
     std::unordered_map<UUID, std::shared_ptr<Backend>> m_backends;
     tl::mutex m_backends_mtx;
 
-    ProviderImpl(const tl::engine& engine, uint16_t provider_id, const tl::pool& pool)
+    ProviderImpl(const tl::engine& engine, uint16_t provider_id, MPI_Comm comm, const tl::pool& pool)
     : tl::provider<ProviderImpl>(engine, provider_id)
-    , m_pool(pool)
+    , m_pool(pool), m_comm(comm)
     , m_create_node(define("ams_create_node", &ProviderImpl::createNode, pool))
     , m_open_node(define("ams_open_node", &ProviderImpl::openNode, pool))
     , m_close_node(define("ams_close_node", &ProviderImpl::closeNode, pool))
@@ -371,7 +372,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
 
 	auto engine = get_engine();
 	auto pool = engine.get_handler_pool();
-	result = node->ams_open_publish_execute(open_opts, bp_mesh, mesh_size, actions, ts, pool.total_size());
+	result = node->ams_open_publish_execute(open_opts, bp_mesh, mesh_size, actions, ts, pool.total_size(), m_comm);
 	req.respond(result);
         spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
@@ -383,7 +384,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         FIND_NODE(node);
 	auto engine = get_engine();
 	auto pool = engine.get_handler_pool();
-	node->ams_execute_pending_requests(pool.total_size());
+	node->ams_execute_pending_requests(pool.total_size(), m_comm);
         spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
 

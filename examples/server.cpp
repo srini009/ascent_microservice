@@ -54,14 +54,16 @@ int main(int argc, char** argv) {
     ofstream addr_file;
     parse_command_line(argc, argv);
     spdlog::set_level(spdlog::level::from_str(g_log_level));
-    tl::engine engine(g_address, THALLIUM_SERVER_MODE, g_use_progress_thread, g_num_threads);
-    engine.enable_remote_shutdown();
-    std::vector<snt::Provider> providers;
-    for(unsigned i=0 ; i < g_num_providers; i++) {
-        providers.emplace_back(engine, i);
-    }
     MPI_Barrier(MPI_COMM_WORLD);
     int rank, size;
+    int key, color;
+    int new_rank, new_size;
+
+    tl::engine engine(g_address, THALLIUM_SERVER_MODE, g_use_progress_thread, g_num_threads);
+    std::vector<snt::Provider> providers;
+
+    engine.enable_remote_shutdown();
+    MPI_Comm new_comm;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -71,13 +73,37 @@ int main(int argc, char** argv) {
 	    addr_file.close();
     }
 
-    for(int i = 0; i < size; i++) {
+   
+    int num_instances = std::stoi(std::string(getenv("AMS_NUM_SERVER_INSTANCES")));
+
+    if(num_instances == 1) {
+        for(int i = 0; i < size; i++) {
 	    if(rank == i) {
 		    addr_file.open(getenv("AMS_SERVER_ADDR_FILE"), ios::app);
 		    addr_file << rank << " " << (std::string)engine.self() << "\n";
 		    addr_file.close();
 	    }
 	    MPI_Barrier(MPI_COMM_WORLD);
+        }
+        MPI_Comm_dup(MPI_COMM_WORLD, &new_comm);
+    } else {
+        key = rank;
+        color = (int)(rank/(size/num_instances));
+        MPI_Comm_split(MPI_COMM_WORLD, color, key, &new_comm);
+        MPI_Comm_rank(new_comm, &new_rank);
+
+        for(int i = 0; i < size; i++) {
+	    if(rank == i) {
+		    addr_file.open(getenv("AMS_SERVER_ADDR_FILE"), ios::app);
+		    addr_file << new_rank << " " << (std::string)engine.self() << "\n";
+		    addr_file.close();
+	    }
+	    MPI_Barrier(MPI_COMM_WORLD);
+        }
+    }
+       
+    for(unsigned i=0 ; i < g_num_providers; i++) {
+        providers.emplace_back(engine, i, new_comm);
     }
 
     spdlog::info("Server running at address {}", (std::string)engine.self());
