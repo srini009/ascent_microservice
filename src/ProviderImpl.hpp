@@ -372,8 +372,9 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
 
 	auto engine = get_engine();
 	auto pool = engine.get_handler_pool();
-	result = node->ams_open_publish_execute(open_opts, bp_mesh, mesh_size, actions, ts, pool.total_size(), m_comm);
+	result.value() = true;
 	req.respond(result);
+	node->ams_open_publish_execute(open_opts, bp_mesh, mesh_size, actions, ts, pool.total_size(), m_comm);
         spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
 
