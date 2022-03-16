@@ -34,6 +34,9 @@ find_package (PkgConfig REQUIRED)
 find_package (thallium REQUIRED)
 # search for uuid
 pkg_check_modules (UUID REQUIRED IMPORTED_TARGET uuid)
+# search for symbiomon
+pkg_check_modules (SYMBIOMON-CLIENT REQUIRED IMPORTED_TARGET symbiomon-client)
+pkg_check_modules (SYMBIOMON-SERVER REQUIRED IMPORTED_TARGET symbiomon-server)
 # comment if you don't need abt-io
 pkg_check_modules (ABTIO REQUIRED IMPORTED_TARGET abt-io)
 # search for nlohmann/json

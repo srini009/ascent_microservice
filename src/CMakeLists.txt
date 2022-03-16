@@ -32,7 +32,9 @@ target_link_libraries (ams-server
     thallium
     PkgConfig::ABTIO
     PkgConfig::UUID
-    nlohmann_json::nlohmann_json)
+    nlohmann_json::nlohmann_json
+    PkgConfig::SYMBIOMON-CLIENT
+    PkgConfig::SYMBIOMON-SERVER)
 target_include_directories (ams-server PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (ams-server BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
