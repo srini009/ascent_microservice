@@ -74,10 +74,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
     // Backends
     std::unordered_map<UUID, std::shared_ptr<Backend>> m_backends;
     tl::mutex m_backends_mtx;
-    // SYMBIOMON metrics
-    symbiomon_provider_t m_metric_provider;
-    uint8_t m_metric_provider_id;
-    symbiomon_metric_t m_server_state;
 
     ProviderImpl(const tl::engine& engine, uint16_t provider_id, MPI_Comm comm, const tl::pool& pool)
     : tl::provider<ProviderImpl>(engine, provider_id)
@@ -97,23 +93,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
     , m_ams_open_publish_execute(define("ams_open_publish_execute",  &ProviderImpl::ams_open_publish_execute, pool))
     , m_ams_execute_pending_requests(define("ams_execute_pending_requests",  &ProviderImpl::ams_execute_pending_requests, pool))
     {
-        struct symbiomon_provider_args args = SYMBIOMON_PROVIDER_ARGS_INIT;
-        args.push_finalize_callback = 0;
-
-        symbiomon_provider_t metric_provider;
-        int ret = symbiomon_provider_register(engine.get_margo_instance(), 42, &args, &metric_provider);
-        if(ret != 0)
-            fprintf(stderr, "Error: symbiomon_provider_register() failed. Continuing on.\n");
-	m_metric_provider = metric_provider;
-        m_metric_provider_id = 42;
-        symbiomon_taglist_t taglist;
-        symbiomon_taglist_create(&taglist, 1, "dummytag");
-
-	if(m_metric_provider != NULL) {
-            symbiomon_metric_create("ams", "server_state", SYMBIOMON_TYPE_GAUGE, "ams:server_state", taglist, &m_server_state, m_metric_provider);
-	    fprintf(stderr, "Metric created successfully!!\n");
-	}
-
         spdlog::trace("[provider:{0}] Registered provider with id {0}", id());
     }
 

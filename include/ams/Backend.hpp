@@ -14,6 +14,10 @@
 #include <thallium.hpp>
 #include <mpi.h>
 
+#include <symbiomon/symbiomon-server.h>
+#include <symbiomon/symbiomon-metric.h>
+#include <symbiomon/symbiomon-common.h>
+
 /**
  * @brief Helper class to register backend types into the backend factory.
  */

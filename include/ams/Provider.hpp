@@ -10,10 +10,6 @@
 #include <memory>
 #include <mpi.h>
 
-#include <symbiomon/symbiomon-server.h>
-#include <symbiomon/symbiomon-metric.h>
-#include <symbiomon/symbiomon-common.h>
-
 namespace ams {
 
 namespace tl = thallium;

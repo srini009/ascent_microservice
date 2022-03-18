@@ -83,11 +83,41 @@ class DummyNode : public ams::Backend {
 
     public:
 
+    // SYMBIOMON metrics
+    symbiomon_provider_t m_metric_provider;
+    uint8_t m_metric_provider_id;
+    symbiomon_metric_t m_server_state;
+    symbiomon_taglist_t m_taglist;
+
+    /**
+     * @brief Constructor.
+     */
+    DummyNode(const json& config, const thallium::engine& engine)
+    : m_config(config) {
+
+        /* Bootstrap to create SYMBIOMON metrics */
+        struct symbiomon_provider_args args = SYMBIOMON_PROVIDER_ARGS_INIT;
+        args.push_finalize_callback = 0;
+
+        int ret = symbiomon_provider_register(engine.get_margo_instance(), 42, &args, &m_metric_provider);
+        if(ret != 0)
+            fprintf(stderr, "Error: symbiomon_provider_register() failed. Continuing on.\n");
+
+        m_metric_provider_id = 42;
+        symbiomon_taglist_create(&m_taglist, 1, "dummytag");
+
+        if(m_metric_provider != NULL) {
+            symbiomon_metric_create("ams", "server_state", SYMBIOMON_TYPE_GAUGE, "ams:server_state", m_taglist, &m_server_state, m_metric_provider);
+            fprintf(stderr, "Metric created successfully!!\n");
+        }
+    }
+
     /**
      * @brief Constructor.
      */
     DummyNode(const json& config)
-    : m_config(config) {}
+    : m_config(config) {
+    }
 
     /**
      * @brief Move-constructor.
