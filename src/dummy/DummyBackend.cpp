@@ -10,11 +10,12 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #define WARMUP_PERIOD 0
-#define MODE 0
 #define EAGER 0
 #define LAZY 1
+#define LAZYISH 2
 
 AMS_REGISTER_BACKEND(dummy, DummyNode);
 
@@ -90,42 +91,41 @@ static double calculate_percent_memory_util()
     return (1.0-((double)memfree/(double)memtotal))*100.0;
 }
 
+void DummyNode::ams_execute_one_request(MPI_Comm comm, ascent::Ascent& a_lib, int rank, int size) {
+
+    int top_task_id = (pq.top()).m_task_id;
+    int recv;
+    MPI_Allreduce(&top_task_id, &recv, 1, MPI_INT, MPI_SUM, comm);
+    if(recv != top_task_id*size) {
+        if(rank == 0)
+            std::cerr << "Skipping this request. Size of pq: " << pq.size() << std::endl;
+    } else {
+        if(rank == 0)
+            std::cerr << "Request is valid. Proceeding with the Ascent computation. Num items in queue: " << pq.size() << std::endl;
+    }
+    /* Perform the ascent viz as a single, atomic operation within the context of the RPC */
+    a_lib.open((pq.top()).m_open_opts);
+    a_lib.publish((pq.top()).m_data);
+    a_lib.execute((pq.top()).m_actions);
+    a_lib.close();
+
+    /* Pop the top element */
+    pq.pop();
+}
+
 /* Go through priority queue and execute all the pending requests one by one */
 /* If this is called AFTER all the clients have sent me their data, it is virtually
  * guaranteed to execute in the order of the client timestamp */
 void DummyNode::ams_execute_pending_requests(size_t pool_size, MPI_Comm comm) {
+    ascent::Ascent a_lib;
     int size;
     int rank;
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &size);
     double start = MPI_Wtime();
 
-    ascent::Ascent a_lib;
-
-    MPI_Barrier(comm);
-
-    if(rank == 0)
-        std::cerr << "Number of pending entries in pq: " << pq.size() << " and number of pending items in ABT pool: " << pool_size << std::endl;
-
     while(pq.size() != 0) {
-        int top_task_id = (pq.top()).m_task_id;
-        int recv;
-        MPI_Allreduce(&top_task_id, &recv, 1, MPI_INT, MPI_SUM, comm);
-        if(recv != top_task_id*size) {
-	    if(rank == 0)
-                std::cerr << "Skipping this request. Size of pq: " << pq.size() << std::endl;
-        } else {
-	    if(rank == 0)
-                std::cerr << "Request is valid. Proceeding with the Ascent computation. Num items in queue: " << pq.size() << std::endl;
-	}
-        /* Perform the ascent viz as a single, atomic operation within the context of the RPC */
-        a_lib.open((pq.top()).m_open_opts);
-        a_lib.publish((pq.top()).m_data);
-        a_lib.execute((pq.top()).m_actions);
-        a_lib.close();
-
-        /* Pop the top element */
-        pq.pop();
+        ams_execute_one_request(comm, a_lib, rank, size);
     }
 
     double end = MPI_Wtime();
@@ -140,6 +140,7 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
 
     int size;
     int rank;
+    int mode = std::stoi(std::string(getenv("AMS_SERVER_MODE")));
 
     ams::RequestResult<bool> result;
     result.value() = true;
@@ -189,8 +190,11 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     fclose(fp_argoq);
     fclose(fp_memq);
 
+    if(mode == LAZY)
+        return result;
+
     /* Check if there are too many pending requests to respond to. If so, I just return. If not, proceed with ascent computation */
-    if(MODE == LAZY) {
+    if(mode == LAZYISH) {
         int execute_ascent = 0;
         if(rank == 0 and pool_size < 5) { /* 5 is chosen as some arbitrary number */
 	    execute_ascent = 1;
