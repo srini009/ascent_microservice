@@ -91,7 +91,7 @@ static double calculate_percent_memory_util()
     return (1.0-((double)memfree/(double)memtotal))*100.0;
 }
 
-void DummyNode::ams_execute_one_request(MPI_Comm comm, ascent::Ascent& a_lib, int rank, int size) {
+void DummyNode::ams_execute_one_request(MPI_Comm comm, ascent::Ascent& a_lib, int rank, int size, FILE *fp) {
 
     int top_task_id = (pq.top()).m_task_id;
     int recv;
@@ -100,8 +100,9 @@ void DummyNode::ams_execute_one_request(MPI_Comm comm, ascent::Ascent& a_lib, in
         if(rank == 0)
             std::cerr << "Skipping this request. Size of pq: " << pq.size() << std::endl;
     } else {
-        if(rank == 0)
-            std::cerr << "Request is valid. Proceeding with the Ascent computation. Num items in queue: " << pq.size() << std::endl;
+        if(rank == 0) {
+            fprintf(fp, "Request is valid. Proceeding with the Ascent computation. Num items in queue: %d\n", pq.size());
+	}
     }
     /* Perform the ascent viz as a single, atomic operation within the context of the RPC */
     a_lib.open((pq.top()).m_open_opts);
@@ -116,23 +117,36 @@ void DummyNode::ams_execute_one_request(MPI_Comm comm, ascent::Ascent& a_lib, in
 /* Go through priority queue and execute all the pending requests one by one */
 /* If this is called AFTER all the clients have sent me their data, it is virtually
  * guaranteed to execute in the order of the client timestamp */
-void DummyNode::ams_execute_pending_requests(size_t pool_size, MPI_Comm comm) {
+void DummyNode::ams_execute_pending_requests(thallium::engine& engine, size_t pool_size, MPI_Comm comm) {
     ascent::Ascent a_lib;
     int size;
-    int rank;
+    int rank, global_rank;
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &global_rank);
+
+    std::string filename_cpp = std::to_string(global_rank) + "_lazy_times.txt";
+    const char *filename = filename_cpp.c_str();
+
+    FILE *fp;
+    fp = fopen(filename, "a");
+
     double start = MPI_Wtime();
 
     while(pq.size() != 0) {
-        ams_execute_one_request(comm, a_lib, rank, size);
+        ams_execute_one_request(comm, a_lib, rank, size, fp);
+	if(rank == 0)
+            fflush(fp);
     }
 
     double end = MPI_Wtime();
 
-    if(rank == 0)
-        std::cerr << "Total server time for finishing pending requests: " << end-start << std::endl;
+    if(rank == 0) {
+        fprintf(fp, "Total server time for finishing pending requests: %lf\n", end-start);
+    }
 
+    fclose(fp);
+    //engine.finalize();
 }
 
 ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_opts, std::string bp_mesh, size_t mesh_size, std::string actions, unsigned int ts, size_t pool_size, MPI_Comm comm) {
@@ -140,21 +154,23 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
 
     int size;
     int rank;
+    int global_rank;
     int mode = std::stoi(std::string(getenv("AMS_SERVER_MODE")));
 
     ams::RequestResult<bool> result;
     result.value() = true;
 
     MPI_Comm_rank(comm, &rank);
+    MPI_Comm_rank(MPI_COMM_WORLD, &global_rank);
     MPI_Comm_size(comm, &size);
     std::ofstream myfile;
 
     FILE *fp, *fp_pq, *fp_argoq, *fp_memq;
 
-    std::string filename_cpp = std::to_string(rank) + "_server_state.txt";
-    std::string pq_size_cpp = std::to_string(rank) + "_pq_size.txt";
-    std::string argoq_size_cpp = std::to_string(rank) + "_argoq_size.txt";
-    std::string memsize_cpp = std::to_string(rank) + "_memsize_size.txt";
+    std::string filename_cpp = std::to_string(global_rank) + "_server_state.txt";
+    std::string pq_size_cpp = std::to_string(global_rank) + "_pq_size.txt";
+    std::string argoq_size_cpp = std::to_string(global_rank) + "_argoq_size.txt";
+    std::string memsize_cpp = std::to_string(global_rank) + "_memsize_size.txt";
 
     const char *filename = filename_cpp.c_str();
     const char *pq_size = pq_size_cpp.c_str();
@@ -185,13 +201,14 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     fprintf(fp_pq, "%.10lf\n", (double)pq.size());
     fprintf(fp_argoq, "%.10lf\n", (double)pool_size);
     fprintf(fp_memq, "%.10lf\n", (double)calculate_percent_memory_util());
-    fclose(fp);
-    fclose(fp_pq);
-    fclose(fp_argoq);
-    fclose(fp_memq);
 
-    if(mode == LAZY)
+    if(mode == LAZY) {
+        fclose(fp);
+        fclose(fp_pq);
+        fclose(fp_argoq);
+        fclose(fp_memq);
         return result;
+    }
 
     /* Check if there are too many pending requests to respond to. If so, I just return. If not, proceed with ascent computation */
     if(mode == LAZYISH) {
@@ -202,6 +219,10 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
 
         MPI_Bcast(&execute_ascent, 1, MPI_INT, 0, comm);
         if(execute_ascent == 0) {
+            fclose(fp);
+            fclose(fp_pq);
+            fclose(fp_argoq);
+            fclose(fp_memq);
             return result;
         }
     }
@@ -244,10 +265,10 @@ ams::RequestResult<bool> DummyNode::ams_open_publish_execute(std::string open_op
     if(rank == 0)
         std::cerr << "Total server time for ascent call: " << end-start << std::endl;
 
-    /*fclose(fp);
+    fclose(fp);
     fclose(fp_pq);
     fclose(fp_argoq);
-    fclose(fp_memq);*/
+    fclose(fp_memq);
 
     return result;
 }

@@ -105,7 +105,7 @@ class Backend {
     /**
      * @brief Executes the pending Ascent viz requests.
      */
-    virtual void ams_execute_pending_requests(size_t pool_size, MPI_Comm comm) = 0;
+    virtual void ams_execute_pending_requests(thallium::engine& engine, size_t pool_size, MPI_Comm comm) = 0;
 
     /**
      * @brief Publishes and Executes a set of actions in Ascent.

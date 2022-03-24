@@ -152,10 +152,10 @@ class DummyNode : public ams::Backend {
     /**
      * @brief Executes pending requests
      */
-    void ams_execute_pending_requests(size_t pool_size, MPI_Comm comm) override;
+    void ams_execute_pending_requests(thallium::engine& engine, size_t pool_size, MPI_Comm comm) override;
 
     /* Helper function that executes one request */
-    void ams_execute_one_request(MPI_Comm comm, ascent::Ascent& a_lib, int rank, int size);
+    void ams_execute_one_request(MPI_Comm comm, ascent::Ascent& a_lib, int rank, int size, FILE *fp);
 
     /**
      * @brief Opens Ascent with a given set of actions.
