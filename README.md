@@ -6,3 +6,7 @@ Inline and in transit visualization have arisen as popular models of in situ vis
 This results in significant idle time on the in transit resource and severely limits the cost savings that can be achieved over the inline model.
 This research proposes that a single, in transit visualization service be shared amongst multiple HPC applications to make efficient use of the in transit resources by reducing the idle time. We realize this idea through SERVIZ, a shared in transit visualization service. SERVIZ achieves cost savings of up to 40% over inline (at scale) and up to 4x reduction in idle time compared to a dedicated in transit implementation.
 In all, the results from this work identify that a shared in transit resource is an attractive approach for cost efficiency.
+
+SERVIZ is a hybrid MPI + RPC visualization program, depicted below:
+An illustration of the SYMBIOMON design is presented below: 
+![SERVIZ](SERVIZ.svg)
