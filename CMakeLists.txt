@@ -44,7 +44,7 @@ find_package (nlohmann_json REQUIRED)
 # search for TCLAP
 find_package (TCLAP REQUIRED)
 # search for spdlog
-find_package(spdlog REQUIRED)
+#find_package(spdlog REQUIRED)
 # search of bedrock if needed
 if (${ENABLE_BEDROCK})
     find_package(bedrock REQUIRED)

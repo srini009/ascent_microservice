@@ -14,7 +14,6 @@
 #include <thallium/serialization/stl/vector.hpp>
 
 #include <nlohmann/json.hpp>
-#include <spdlog/spdlog.h>
 
 #include <ascent/ascent.hpp>
 
@@ -30,7 +29,6 @@
                 result.success() = false;\
                 result.error() = "Node with UUID "s + node_id.to_string() + " not found";\
                 req.respond(result);\
-                spdlog::error("[provider:{}] Node {} not found", id(), node_id.to_string());\
                 return;\
             }\
             __var__ = it->second;\
@@ -93,11 +91,9 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
     , m_ams_open_publish_execute(define("ams_open_publish_execute",  &ProviderImpl::ams_open_publish_execute, pool))
     , m_ams_execute_pending_requests(define("ams_execute_pending_requests",  &ProviderImpl::ams_execute_pending_requests, pool))
     {
-        spdlog::trace("[provider:{0}] Registered provider with id {0}", id());
     }
 
     ~ProviderImpl() {
-        spdlog::trace("[provider:{}] Deregistering provider", id());
         m_create_node.deregister();
         m_open_node.deregister();
         m_close_node.deregister();
@@ -112,7 +108,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         m_ams_open_publish_execute.deregister();
         m_ams_execute_pending_requests.deregister();
         m_ams_publish.deregister();
-        spdlog::trace("[provider:{}]    => done!", id());
     }
 
     void createNode(const tl::request& req,
@@ -120,9 +115,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
                         const std::string& node_type,
                         const std::string& node_config) {
 
-        spdlog::trace("[provider:{}] Received createNode request", id());
-        spdlog::trace("[provider:{}]    => type = {}", id(), node_type);
-        spdlog::trace("[provider:{}]    => config = {}", id(), node_config);
 
         auto node_id = UUID::generate();
         RequestResult<UUID> result;
@@ -131,7 +123,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
             result.success() = false;
             result.error() = "Invalid security token";
             req.respond(result);
-            spdlog::error("[provider:{}] Invalid security token {}", id(), token);
             return;
         }
 
@@ -141,8 +132,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         } catch(json::parse_error& e) {
             result.error() = e.what();
             result.success() = false;
-            spdlog::error("[provider:{}] Could not parse node configuration for node {}",
-                    id(), node_id.to_string());
             req.respond(result);
             return;
         }
@@ -153,9 +142,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         } catch(const std::exception& ex) {
             result.success() = false;
             result.error() = ex.what();
-            spdlog::error("[provider:{}] Error when creating node {} of type {}:",
-                    id(), node_id.to_string(), node_type);
-            spdlog::error("[provider:{}]    => {}", id(), result.error());
             req.respond(result);
             return;
         }
@@ -163,8 +149,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         if(not backend) {
             result.success() = false;
             result.error() = "Unknown node type "s + node_type;
-            spdlog::error("[provider:{}] Unknown node type {} for node {}",
-                    id(), node_type, node_id.to_string());
             req.respond(result);
             return;
         } else {
@@ -174,8 +158,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         }
         
         req.respond(result);
-        spdlog::trace("[provider:{}] Successfully created node {} of type {}",
-                id(), node_id.to_string(), node_type);
     }
 
     void openNode(const tl::request& req,
@@ -183,9 +165,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
                       const std::string& node_type,
                       const std::string& node_config) {
 
-        spdlog::trace("[provider:{}] Received openNode request", id());
-        spdlog::trace("[provider:{}]    => type = {}", id(), node_type);
-        spdlog::trace("[provider:{}]    => config = {}", id(), node_config);
 
         auto node_id = UUID::generate();
         RequestResult<UUID> result;
@@ -194,7 +173,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
             result.success() = false;
             result.error() = "Invalid security token";
             req.respond(result);
-            spdlog::error("[provider:{}] Invalid security token {}", id(), token);
             return;
         }
 
@@ -204,8 +182,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         } catch(json::parse_error& e) {
             result.error() = e.what();
             result.success() = false;
-            spdlog::error("[provider:{}] Could not parse node configuration for node {}",
-                    id(), node_id.to_string());
             req.respond(result);
             return;
         }
@@ -216,9 +192,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         } catch(const std::exception& ex) {
             result.success() = false;
             result.error() = ex.what();
-            spdlog::error("[provider:{}] Error when opening node {} of type {}:",
-                    id(), node_id.to_string(), node_type);
-            spdlog::error("[provider:{}]    => {}", id(), result.error());
             req.respond(result);
             return;
         }
@@ -226,8 +199,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         if(not backend) {
             result.success() = false;
             result.error() = "Unknown node type "s + node_type;
-            spdlog::error("[provider:{}] Unknown node type {} for node {}",
-                    id(), node_type, node_id.to_string());
             req.respond(result);
             return;
         } else {
@@ -237,15 +208,11 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         }
         
         req.respond(result);
-        spdlog::trace("[provider:{}] Successfully created node {} of type {}",
-                id(), node_id.to_string(), node_type);
     }
 
     void closeNode(const tl::request& req,
                         const std::string& token,
                         const UUID& node_id) {
-        spdlog::trace("[provider:{}] Received closeNode request for node {}",
-                id(), node_id.to_string());
 
         RequestResult<bool> result;
 
@@ -253,7 +220,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
             result.success() = false;
             result.error() = "Invalid security token";
             req.respond(result);
-            spdlog::error("[provider:{}] Invalid security token {}", id(), token);
             return;
         }
 
@@ -264,27 +230,23 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
                 result.success() = false;
                 result.error() = "Node "s + node_id.to_string() + " not found";
                 req.respond(result);
-                spdlog::error("[provider:{}] Node {} not found", id(), node_id.to_string());
                 return;
             }
 
             m_backends.erase(node_id);
         }
         req.respond(result);
-        spdlog::trace("[provider:{}] Node {} successfully closed", id(), node_id.to_string());
     }
     
     void destroyNode(const tl::request& req,
                          const std::string& token,
                          const UUID& node_id) {
         RequestResult<bool> result;
-        spdlog::trace("[provider:{}] Received destroyNode request for node {}", id(), node_id.to_string());
 
         if(m_token.size() > 0 && m_token != token) {
             result.success() = false;
             result.error() = "Invalid security token";
             req.respond(result);
-            spdlog::error("[provider:{}] Invalid security token {}", id(), token);
             return;
         }
 
@@ -295,7 +257,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
                 result.success() = false;
                 result.error() = "Node "s + node_id.to_string() + " not found";
                 req.respond(result);
-                spdlog::error("[provider:{}] Node {} not found", id(), node_id.to_string());
                 return;
             }
 
@@ -304,59 +265,48 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
         }
 
         req.respond(result);
-        spdlog::trace("[provider:{}] Node {} successfully destroyed", id(), node_id.to_string());
     }
 
     void checkNode(const tl::request& req,
                        const UUID& node_id) {
-        spdlog::trace("[provider:{}] Received checkNode request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
         result.success() = true;
         req.respond(result);
-        spdlog::trace("[provider:{}] Code successfully executed on node {}", id(), node_id.to_string());
     }
 
     void sayHello(const tl::request& req,
                   const UUID& node_id) {
-        spdlog::trace("[provider:{}] Received sayHello request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
         node->sayHello();
-        spdlog::trace("[provider:{}] Successfully executed sayHello on node {}", id(), node_id.to_string());
     }
 
     /* SR: Core Ascent APIs */
     void ams_open(const tl::request& req,
                   const UUID& node_id,
 		  std::string opts) {
-        spdlog::trace("[provider:{}] Received ams_open request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
         result = node->ams_open(opts);
 	req.respond(result);
-        spdlog::trace("[provider:{}] Successfully executed ams_open on node {}", id(), node_id.to_string());
     }
 
     void ams_close(const tl::request& req,
                   const UUID& node_id) {
-        spdlog::trace("[provider:{}] Received ams_close request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
         result = node->ams_close();
 	req.respond(result);
-        spdlog::trace("[provider:{}] Successfully executed ams_close on node {}", id(), node_id.to_string());
     }
 
     void ams_execute(const tl::request& req,
                   const UUID& node_id,
 		  std::string actions) {
-        spdlog::trace("[provider:{}] Received ams_execute request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
         result = node->ams_execute(actions);
 	req.respond(result);
-        spdlog::trace("[provider:{}] Successfully executed ams_execute on node {}", id(), node_id.to_string());
     }
 
     void ams_open_publish_execute(const tl::request& req,
@@ -366,7 +316,6 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
 		  size_t mesh_size,
 		  std::string actions,
 		  unsigned int ts) {
-        spdlog::trace("[provider:{}] Received ams_open_publish_execute request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
 
@@ -375,52 +324,43 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
 	result.value() = true;
 	req.respond(result);
 	node->ams_open_publish_execute(open_opts, bp_mesh, mesh_size, actions, ts, pool.total_size(), m_comm);
-        spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
 
     void ams_execute_pending_requests(const tl::request& req,
                   const UUID& node_id) {
-        spdlog::trace("[provider:{}] Received ams_execute_pending_requests request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
 	auto engine = get_engine();
 	auto pool = engine.get_handler_pool();
 	node->ams_execute_pending_requests(engine, pool.total_size(), m_comm);
-        spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
 
     void ams_publish_and_execute(const tl::request& req,
                   const UUID& node_id,
 		  std::string bp_mesh,
 		  std::string actions) {
-        spdlog::trace("[provider:{}] Received ams_publish_and_execute request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
         result = node->ams_publish_and_execute(bp_mesh, actions);
 	req.respond(result);
-        spdlog::trace("[provider:{}] Successfully executed ams_publish_and_execute on node {}", id(), node_id.to_string());
     }
 
     void ams_publish(const tl::request& req,
                   const UUID& node_id,
 		  std::string bp_mesh) {
-        spdlog::trace("[provider:{}] Received ams_publish request for node {}", id(), node_id.to_string());
         RequestResult<bool> result;
         FIND_NODE(node);
         result = node->ams_publish(bp_mesh);
 	req.respond(result);
-        spdlog::trace("[provider:{}] Successfully executed ams_publish on node {}", id(), node_id.to_string());
     }
 
     void computeSum(const tl::request& req,
                     const UUID& node_id,
                     int32_t x, int32_t y) {
-        spdlog::trace("[provider:{}] Received sayHello request for node {}", id(), node_id.to_string());
         RequestResult<int32_t> result;
         FIND_NODE(node);
         result = node->computeSum(x, y);
         req.respond(result);
-        spdlog::trace("[provider:{}] Successfully executed computeSum on node {}", id(), node_id.to_string());
     }
 
 };

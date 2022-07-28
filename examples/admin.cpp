@@ -4,7 +4,6 @@
  * See COPYRIGHT in top-level directory.
  */
 #include <ams/Admin.hpp>
-#include <spdlog/spdlog.h>
 #include <tclap/CmdLine.h>
 #include <iostream>
 #include <fstream>
@@ -46,7 +45,6 @@ static std::string read_nth_line(const std::string& filename, int n)
 
 int main(int argc, char** argv) {
     parse_command_line(argc, argv);
-    spdlog::set_level(spdlog::level::from_str(g_log_level));
     ofstream addr_file;
     // Initialize the thallium server
     tl::engine engine(g_protocol, THALLIUM_CLIENT_MODE);
@@ -61,23 +59,18 @@ int main(int argc, char** argv) {
 	        if(g_operation == "create") {
         	    auto id = admin.createNode(g_addresses[i], g_provider_id,
 	                g_type, g_config, g_token);
-	            spdlog::info("Created node {}", id.to_string());
 		    addr_file << id.to_string() << "\n";
 	        } else if(g_operation == "open") {
 	            auto id = admin.openNode(g_addresses[i], g_provider_id,
 	                g_type, g_config, g_token);
-	            spdlog::info("Opened node {}", id.to_string());
 	        } else if(g_operation == "close") {
 	            admin.closeNode(g_addresses[i], g_provider_id,
 	                ams::UUID::from_string(g_node.c_str()), g_token);
-	            spdlog::info("Closed node {}", g_node);
 	        } else if(g_operation == "destroy") {
 	            admin.destroyNode(g_addresses[i], g_provider_id,
 	                ams::UUID::from_string(g_node.c_str()), g_token);
-	            spdlog::info("Destroyed node {}", g_node);
 	        } else if(g_operation == "shutdown") {
 		    admin.shutdownServer(g_addresses[i]);
-	            spdlog::info("Destroyed server {}", g_addresses[i]);
 		}
 
 	        // Any of the above functions may throw a ams::Exception

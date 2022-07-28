@@ -4,7 +4,6 @@
  * See COPYRIGHT in top-level directory.
  */
 #include <ams/Client.hpp>
-#include <spdlog/spdlog.h>
 #include <tclap/CmdLine.h>
 #include <iostream>
 #include <assert.h>
@@ -46,7 +45,6 @@ static std::string read_nth_line(const std::string& filename, int n)
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
     parse_command_line(argc, argv);
-    spdlog::set_level(spdlog::level::from_str(g_log_level));
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 

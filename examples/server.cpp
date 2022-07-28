@@ -8,7 +8,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <spdlog/spdlog.h>
 #include <tclap/CmdLine.h>
 #include <mpi.h>
 
@@ -36,7 +35,6 @@ static void setup_admin_nodes(tl::engine engine, std::string server_addr, int ra
 	    try {
 		    auto id = admin.createNode(server_addr, 0, "dummy", "{\"path\" : \"mydb\" }", "");
 		    // Any of the above functions may throw a ams::Exception
-	    	    spdlog::info("Created node {}", id.to_string());
 		    addr_file << id.to_string() << "\n";
 	    } catch(const ams::Exception& ex) {
 	    	    std::cerr << ex.what() << std::endl;
@@ -53,7 +51,6 @@ int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
     ofstream addr_file;
     parse_command_line(argc, argv);
-    spdlog::set_level(spdlog::level::from_str(g_log_level));
     MPI_Barrier(MPI_COMM_WORLD);
     int rank, size;
     int key, color;
@@ -105,8 +102,6 @@ int main(int argc, char** argv) {
     for(unsigned i=0 ; i < g_num_providers; i++) {
         providers.emplace_back(engine, i, new_comm);
     }
-
-    spdlog::info("Server running at address {}", (std::string)engine.self());
 
     MPI_Barrier(MPI_COMM_WORLD);
     setup_admin_nodes(engine, (std::string)engine.self(), rank, size);
